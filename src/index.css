@@ -1,96 +1,156 @@
+@import '@fontsource/playfair-display/400.css';
+@import '@fontsource/playfair-display/500.css';
+@import '@fontsource/playfair-display/600.css';
+@import '@fontsource/playfair-display/700.css';
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+  DESIGN SYSTEM — Premium Editorial Landing Page
+  
+  Color Palette:
+  - Primary: Wine Purple (Roxo Vinho Elegante)
+  - Background: Snow White (Branco Neve)
+  - Accent: Soft Green (Verde Suave/Verde Pá)
+  - Text: Graphite (Preto/Cinza Grafite)
+  
+  Typography Scale (1.2 ratio):
+  - 4xl: 2.986rem (47.78px)
+  - 3xl: 2.488rem (39.81px)
+  - 2xl: 2.074rem (33.18px)
+  - xl: 1.728rem (27.65px)
+  - lg: 1.44rem (23.04px)
+  - base: 1.2rem (19.2px)
+  - sm: 1rem (16px)
+  - xs: 0.833rem (13.33px)
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Colors - Wine Purple Theme */
+    --background: 30 20% 99%;
+    --foreground: 318 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 318 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 318 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Wine Purple */
+    --primary: 318 40% 30%;
+    --primary-foreground: 30 20% 99%;
+    --primary-light: 318 35% 45%;
+    --primary-dark: 318 45% 22%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Soft Graphite */
+    --secondary: 30 10% 95%;
+    --secondary-foreground: 318 15% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Accent - Soft Green */
+    --accent: 122 25% 45%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 122 20% 55%;
+    --accent-muted: 122 15% 92%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --muted: 30 15% 96%;
+    --muted-foreground: 318 10% 45%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 30 15% 90%;
+    --input: 30 15% 90%;
+    --ring: 318 40% 30%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar */
+    --sidebar-background: 30 20% 99%;
+    --sidebar-foreground: 318 15% 15%;
+    --sidebar-primary: 318 40% 30%;
+    --sidebar-primary-foreground: 30 20% 99%;
+    --sidebar-accent: 122 25% 45%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 30 15% 90%;
+    --sidebar-ring: 318 40% 30%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Custom Design Tokens */
+    --gradient-hero: linear-gradient(135deg, hsl(318 40% 30%) 0%, hsl(318 35% 40%) 50%, hsl(122 20% 45%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(30 20% 99%) 0%, hsl(30 15% 97%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(30 15% 98%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(122 25% 45%) 0%, hsl(122 30% 55%) 100%);
 
-    --sidebar-primary: 240 5.9% 10%;
+    --shadow-sm: 0 1px 2px 0 hsl(318 15% 15% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(318 15% 15% / 0.05), 0 2px 4px -2px hsl(318 15% 15% / 0.03);
+    --shadow-lg: 0 10px 15px -3px hsl(318 15% 15% / 0.06), 0 4px 6px -4px hsl(318 15% 15% / 0.03);
+    --shadow-xl: 0 20px 25px -5px hsl(318 15% 15% / 0.08), 0 8px 10px -6px hsl(318 15% 15% / 0.03);
+    --shadow-elegant: 0 25px 50px -12px hsl(318 40% 30% / 0.15);
+    --shadow-glow: 0 0 40px hsl(318 40% 30% / 0.1);
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Animation Tokens */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-elegant: 700ms cubic-bezier(0.16, 1, 0.3, 1);
 
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Spacing Scale */
+    --space-section: 8rem;
+    --space-block: 4rem;
+    --space-element: 2rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 318 20% 8%;
+    --foreground: 30 20% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 318 18% 12%;
+    --card-foreground: 30 20% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 318 18% 12%;
+    --popover-foreground: 30 20% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 318 35% 55%;
+    --primary-foreground: 318 20% 8%;
+    --primary-light: 318 30% 65%;
+    --primary-dark: 318 40% 45%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 318 15% 18%;
+    --secondary-foreground: 30 20% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 122 30% 50%;
+    --accent-foreground: 318 20% 8%;
+    --accent-light: 122 25% 60%;
+    --accent-muted: 122 20% 20%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --muted: 318 15% 18%;
+    --muted-foreground: 30 15% 65%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --border: 318 15% 20%;
+    --input: 318 15% 20%;
+    --ring: 318 35% 55%;
+
+    --sidebar-background: 318 20% 8%;
+    --sidebar-foreground: 30 20% 95%;
+    --sidebar-primary: 318 35% 55%;
+    --sidebar-primary-foreground: 318 20% 8%;
+    --sidebar-accent: 122 30% 50%;
+    --sidebar-accent-foreground: 318 20% 8%;
+    --sidebar-border: 318 15% 20%;
+    --sidebar-ring: 318 35% 55%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(318 35% 45%) 0%, hsl(318 30% 55%) 50%, hsl(122 25% 50%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(318 20% 8%) 0%, hsl(318 18% 10%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(318 18% 12%) 0%, hsl(318 15% 15%) 100%);
   }
 }
 
@@ -99,7 +159,183 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    @apply text-5xl md:text-6xl lg:text-7xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  p {
+    @apply text-base md:text-lg;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
+    color: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+  .container-premium {
+    @apply mx-auto w-full max-w-7xl px-6 md:px-8 lg:px-12;
+  }
+
+  .section-spacing {
+    @apply py-20 md:py-28 lg:py-32;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-hero);
+  }
+
+  .card-premium {
+    @apply rounded-2xl bg-card p-8 md:p-10;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-base);
+  }
+
+  .card-premium:hover {
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-primary px-8 py-4 text-sm font-medium text-primary-foreground;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-primary:hover {
+    @apply bg-primary/90;
+    box-shadow: var(--shadow-elegant);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-border bg-transparent px-8 py-4 text-sm font-medium text-foreground;
+    transition: var(--transition-base);
+  }
+
+  .btn-secondary:hover {
+    @apply bg-secondary;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center rounded-full bg-accent px-8 py-4 text-sm font-medium text-accent-foreground;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-accent:hover {
+    @apply bg-accent/90;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+
+  .input-premium {
+    @apply w-full rounded-xl border border-border bg-background px-5 py-4 text-foreground placeholder:text-muted-foreground;
+    transition: var(--transition-fast);
+  }
+
+  .input-premium:focus {
+    @apply border-primary outline-none ring-2 ring-primary/20;
+  }
+
+  .link-underline {
+    @apply relative inline-block text-foreground;
+  }
+
+  .link-underline::after {
+    @apply absolute bottom-0 left-0 h-px w-0 bg-primary;
+    content: '';
+    transition: var(--transition-base);
+  }
+
+  .link-underline:hover::after {
+    @apply w-full;
+  }
+
+  .divider-elegant {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-border to-transparent;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn var(--transition-elegant) forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp var(--transition-elegant) forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn var(--transition-elegant) forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
