@@ -38,9 +38,9 @@ export const Navbar = () => {
           {/* Logo */}
           <a href="#" className="flex items-center gap-3 group">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <span className="text-primary-foreground font-serif text-xl font-semibold">L</span>
+              <span className="text-primary-foreground font-display text-xl font-semibold">L</span>
             </div>
-            <span className="font-serif text-xl md:text-2xl font-medium tracking-tight text-foreground">
+            <span className="font-display text-xl md:text-2xl font-semibold tracking-tight text-foreground">
               Lorem
             </span>
           </a>

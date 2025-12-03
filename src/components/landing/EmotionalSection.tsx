@@ -19,13 +19,13 @@ export const EmotionalSection = () => {
         >
           <Quote className="w-16 h-16 text-primary/20 mx-auto mb-8" />
           
-          <blockquote className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-medium text-foreground leading-snug mb-10">
+          <blockquote className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground leading-snug mb-10">
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
           </blockquote>
 
           <div className="flex items-center justify-center gap-4">
             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="font-serif text-xl text-primary">JD</span>
+              <span className="font-display text-xl font-bold text-primary">JD</span>
             </div>
             <div className="text-left">
               <div className="font-medium text-foreground">John Doe Lorem</div>

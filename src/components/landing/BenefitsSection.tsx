@@ -67,7 +67,7 @@ export const BenefitsSection = () => {
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
               Benefícios
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-foreground mb-6">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Lorem ipsum dolor sit amet
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -88,7 +88,7 @@ export const BenefitsSection = () => {
                     <benefit.icon className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-serif text-xl md:text-2xl font-medium text-foreground mb-3">
+                    <h3 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-3">
                       {benefit.title}
                     </h3>
                     <p className="text-muted-foreground leading-relaxed">

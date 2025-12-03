@@ -66,7 +66,7 @@ export const HowItWorksSection = () => {
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
               Como Funciona
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-foreground mb-6">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Nemo enim ipsam voluptatem
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -88,14 +88,14 @@ export const HowItWorksSection = () => {
                 >
                   {/* Number */}
                   <div className="flex-shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-2xl bg-card shadow-lg border border-border flex items-center justify-center relative z-10">
-                    <span className="font-serif text-2xl lg:text-3xl font-medium text-primary">
+                    <span className="font-display text-2xl lg:text-3xl font-bold text-primary">
                       {step.number}
                     </span>
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 pt-3 lg:pt-4">
-                    <h3 className="font-serif text-xl md:text-2xl lg:text-3xl font-medium text-foreground mb-3">
+                    <h3 className="font-display text-xl md:text-2xl lg:text-3xl font-semibold text-foreground mb-3">
                       {step.title}
                     </h3>
                     <p className="text-muted-foreground text-lg leading-relaxed max-w-xl">

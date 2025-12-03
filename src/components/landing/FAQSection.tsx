@@ -76,7 +76,7 @@ export const FAQSection = () => {
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
               Perguntas Frequentes
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-foreground mb-6">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Dúvidas comuns
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -93,7 +93,7 @@ export const FAQSection = () => {
                   value={`item-${index}`}
                   className="bg-card rounded-2xl border border-border px-6 md:px-8 shadow-sm hover:shadow-md transition-shadow duration-300"
                 >
-                  <AccordionTrigger className="text-left font-serif text-lg md:text-xl font-medium text-foreground py-6 hover:no-underline [&[data-state=open]]:text-primary">
+                  <AccordionTrigger className="text-left font-display text-lg md:text-xl font-semibold text-foreground py-6 hover:no-underline [&[data-state=open]]:text-primary">
                     {faq.question}
                   </AccordionTrigger>
                   <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">

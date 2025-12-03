@@ -50,9 +50,9 @@ export const Footer = () => {
           <div className="col-span-2">
             <a href="#" className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-primary-foreground flex items-center justify-center">
-                <span className="text-primary font-serif text-xl font-semibold">L</span>
+                <span className="text-primary font-display text-xl font-bold">L</span>
               </div>
-              <span className="font-serif text-2xl font-medium">Lorem</span>
+              <span className="font-display text-2xl font-semibold">Lorem</span>
             </a>
             <p className="text-primary-foreground/70 mb-6 max-w-xs leading-relaxed">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt.

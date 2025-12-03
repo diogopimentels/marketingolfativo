@@ -25,7 +25,7 @@ export const StorytellingSection = () => {
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
               Nossa História
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-foreground mb-8 leading-tight">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-8 leading-tight">
               Sed ut perspiciatis unde omnis iste natus
             </h2>
             <div className="space-y-6 text-muted-foreground text-lg leading-relaxed">
@@ -45,7 +45,7 @@ export const StorytellingSection = () => {
                 { value: "150+", label: "Amet consectetur" },
               ].map((stat, index) => (
                 <div key={index}>
-                  <div className="font-serif text-3xl md:text-4xl font-medium text-primary mb-2">
+                  <div className="font-display text-3xl md:text-4xl font-bold text-primary mb-2">
                     {stat.value}
                   </div>
                   <div className="text-sm text-muted-foreground">{stat.label}</div>
@@ -67,7 +67,7 @@ export const StorytellingSection = () => {
                 <div className="w-3/4 h-3/4 rounded-2xl bg-card shadow-elegant border border-border/50 flex items-center justify-center">
                   <div className="text-center p-8">
                     <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-6 flex items-center justify-center">
-                      <span className="font-serif text-3xl text-primary">L</span>
+                      <span className="font-display text-3xl font-bold text-primary">L</span>
                     </div>
                     <p className="text-muted-foreground">Imagem ilustrativa</p>
                   </div>

@@ -75,7 +75,7 @@ export const StatsSection = () => {
             <span className="text-sm font-medium text-primary-foreground/70 uppercase tracking-widest mb-4 block">
               Resultados
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium mb-6">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
               Numquam eius modi tempora
             </h2>
             <p className="text-primary-foreground/80 text-lg max-w-2xl mx-auto">
@@ -94,7 +94,7 @@ export const StatsSection = () => {
                 <div className="w-14 h-14 rounded-2xl bg-primary-foreground/10 flex items-center justify-center mx-auto mb-6">
                   <stat.icon className="w-7 h-7 text-primary-foreground" />
                 </div>
-                <div className="font-serif text-4xl md:text-5xl font-medium mb-2">
+                <div className="font-display text-4xl md:text-5xl font-bold mb-2">
                   {stat.value}
                 </div>
                 <div className="font-medium text-lg mb-2">{stat.label}</div>

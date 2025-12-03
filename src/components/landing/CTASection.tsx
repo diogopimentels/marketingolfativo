@@ -32,7 +32,7 @@ export const CTASection = () => {
             <span className="text-sm font-medium text-accent">Lorem ipsum dolor sit amet</span>
           </motion.div>
 
-          <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium text-foreground mb-8 leading-tight">
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-8 leading-tight">
             Quis autem vel eum iure{" "}
             <span className="text-gradient">reprehenderit</span>
           </h2>

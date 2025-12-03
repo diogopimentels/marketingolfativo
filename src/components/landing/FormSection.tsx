@@ -40,7 +40,7 @@ export const FormSection = () => {
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
               Contato
             </span>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-foreground mb-6">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Fale conosco
             </h2>
             <p className="text-muted-foreground text-lg">
