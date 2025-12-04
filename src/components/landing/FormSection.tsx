@@ -16,13 +16,16 @@ export const FormSection = () => {
     email: "",
     telefone: "",
     nomeMarca: "",
-    temMarca: "confeccao",
+    temMarca: "Confecção Atacado",
     newsletter: true
   });
   const ebookUrl = "https://drive.google.com/uc?export=download&id=1NoFqm9FwG9gEGVLnoC4K7Egc0J8DAyda";
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value, type, checked, name } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { id, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    const name = (e.target as HTMLInputElement).name;
+
     if (type === 'radio') {
       setFormData(prev => ({ ...prev, [name]: value }));
     } else if (type === 'checkbox') {
@@ -39,7 +42,7 @@ export const FormSection = () => {
     try {
       await submitToAgendor({
         ...formData,
-        temMarca: formData.temMarca === 'confeccao' ? 'Confecção' : 'Atacado'
+        temMarca: formData.temMarca
       });
 
       toast({
@@ -153,37 +156,25 @@ export const FormSection = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+              <label htmlFor="temMarca" className="block text-sm font-medium text-foreground mb-2">
                 Você tem marca de roupas ou confecção?
               </label>
-              <div className="flex gap-6 mt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="temMarca"
-                    value="confeccao"
-                    checked={formData.temMarca === 'confeccao'}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-primary focus:ring-primary"
-                    required
-                    disabled={isSuccess}
-                  />
-                  <span className="text-foreground">Confecção</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="temMarca"
-                    value="atacado"
-                    checked={formData.temMarca === 'atacado'}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-primary focus:ring-primary"
-                    required
-                    disabled={isSuccess}
-                  />
-                  <span className="text-foreground">Atacado</span>
-                </label>
-              </div>
+              <select
+                id="temMarca"
+                value={formData.temMarca}
+                onChange={handleChange}
+                className="input-premium w-full"
+                required
+                disabled={isSuccess}
+              >
+                <option value="Confecção Atacado">Confecção Atacado</option>
+                <option value="Confecção Varejo">Confecção Varejo</option>
+                <option value="Loja Boutique de Roupas">Loja Boutique de Roupas</option>
+                <option value="Loja de departamento">Loja de departamento</option>
+                <option value="Varejo de Moda">Varejo de Moda</option>
+                <option value="Atacado de Moda">Atacado de Moda</option>
+                <option value="Outros">Outros</option>
+              </select>
             </div>
 
             <div className="flex items-center gap-2">
