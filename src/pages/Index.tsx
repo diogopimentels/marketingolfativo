@@ -17,15 +17,15 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
-        <BenefitsSection />
-        <StorytellingSection />
-        <StatsSection />
         <FeaturesSection />
-        <EmotionalSection />
-        <HowItWorksSection />
-        <CTASection />
+        <StatsSection />
+        <StorytellingSection />
+        {/* <BenefitsSection /> */}
+        {/* <EmotionalSection /> */}
+        {/* <HowItWorksSection /> */}
+        {/* <CTASection /> */}
         <FormSection />
-        <FAQSection />
+        {/* <FAQSection /> */}
       </main>
       <Footer />
     </div>

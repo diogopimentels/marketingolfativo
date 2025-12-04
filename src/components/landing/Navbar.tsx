@@ -4,10 +4,10 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { label: "Benefícios", href: "#beneficios" },
-  { label: "Como Funciona", href: "#como-funciona" },
-  { label: "Recursos", href: "#recursos" },
-  { label: "FAQ", href: "#faq" },
+  { label: "O que aprender", href: "#o-que-aprender" },
+  { label: "Estatísticas", href: "#estatisticas" },
+  { label: "Sobre", href: "#sobre" },
+  { label: "Baixar", href: "#baixar" },
 ];
 
 export const Navbar = () => {
@@ -37,12 +37,7 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-20 md:h-24">
           {/* Logo */}
           <a href="#" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-              <span className="text-primary-foreground font-display text-xl font-semibold">L</span>
-            </div>
-            <span className="font-display text-xl md:text-2xl font-semibold tracking-tight text-foreground">
-              Lorem
-            </span>
+            <img src="/logo.png" alt="Logo" className="h-12 w-auto object-contain" />
           </a>
 
           {/* Desktop Navigation */}
@@ -60,11 +55,8 @@ export const Navbar = () => {
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              Lorem Ipsum
-            </Button>
-            <Button variant="default" size="default">
-              Dolor Sit
+            <Button variant="default" size="default" onClick={() => document.getElementById('baixar')?.scrollIntoView({ behavior: 'smooth' })}>
+              BAIXAR AGORA
             </Button>
           </div>
 
@@ -101,11 +93,11 @@ export const Navbar = () => {
                 </a>
               ))}
               <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-border">
-                <Button variant="outline" className="w-full">
-                  Lorem Ipsum
-                </Button>
-                <Button variant="default" className="w-full">
-                  Dolor Sit
+                <Button variant="default" className="w-full" onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  document.getElementById('baixar')?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  BAIXAR AGORA
                 </Button>
               </div>
             </div>
@@ -115,3 +107,4 @@ export const Navbar = () => {
     </motion.header>
   );
 };
+

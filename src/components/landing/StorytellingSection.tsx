@@ -7,7 +7,7 @@ export const StorytellingSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section className="section-spacing overflow-hidden">
+    <section id="sobre" className="section-spacing overflow-hidden">
       <div className="container-premium">
         <motion.div
           ref={ref}
@@ -23,34 +23,33 @@ export const StorytellingSection = () => {
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
-              Nossa História
+              Marketing Olfativo
             </span>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-8 leading-tight">
-              Sed ut perspiciatis unde omnis iste natus
+              O que o marketing olfativo pode fazer pela sua marca de moda?
             </h2>
             <div className="space-y-6 text-muted-foreground text-lg leading-relaxed">
               <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                Descubra como grandes marcas usam fragrâncias para criar conexão emocional, aumentar vendas e fidelizar clientes.
               </p>
               <p>
-                Nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+                Você já se perguntou por que certas marcas deixam uma impressão tão profunda, que até o aroma delas parece inesquecível? O segredo está no marketing olfativo.
               </p>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 mt-12 pt-12 border-t border-border">
-              {[
-                { value: "98%", label: "Lorem ipsum" },
-                { value: "2M+", label: "Dolor sit" },
-                { value: "150+", label: "Amet consectetur" },
-              ].map((stat, index) => (
-                <div key={index}>
-                  <div className="font-display text-3xl md:text-4xl font-bold text-primary mb-2">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              ))}
+              <p>
+                Em um mundo onde todos disputam atenção com imagens e sons, as marcas que tocam o coração – e o olfato – criam experiências verdadeiramente memoráveis.
+              </p>
+              <p>
+                Um aroma exclusivo transforma a simples visita a uma loja em um momento de encantamento, um encontro sensorial que gera conexão, confiança e desejo.
+              </p>
+              <p>
+                Grandes marcas já entenderam que o cheiro certo faz toda a diferença: cria identidade, reforça valores e se torna uma extensão natural do que a marca é.
+              </p>
+              <p>
+                O marketing olfativo não é apenas um detalhe: é a emoção que sua cliente leva para casa, associada à sensação de bem-estar, elegância e exclusividade.
+              </p>
+              <p className="font-semibold text-foreground">
+                Porque no final das contas, a cliente pode até esquecer o que viu ou ouviu... Mas nunca vai esquecer como você a fez se sentir.
+              </p>
             </div>
           </motion.div>
 
@@ -61,29 +60,11 @@ export const StorytellingSection = () => {
             transition={{ duration: 0.7, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="relative"
           >
-            <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5">
-              {/* Decorative Elements */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-3/4 h-3/4 rounded-2xl bg-card shadow-elegant border border-border/50 flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <div className="w-20 h-20 rounded-full bg-primary/10 mx-auto mb-6 flex items-center justify-center">
-                      <span className="font-display text-3xl font-bold text-primary">L</span>
-                    </div>
-                    <p className="text-muted-foreground">Imagem ilustrativa</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Elements */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-8 right-8 w-20 h-20 rounded-2xl bg-accent/20 backdrop-blur-sm"
-              />
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute bottom-12 left-8 w-16 h-16 rounded-full bg-primary/20 backdrop-blur-sm"
+            <div className="relative rounded-3xl overflow-hidden">
+              <img
+                src="/section.png"
+                alt="Marketing Olfativo"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
               />
             </div>
           </motion.div>
@@ -92,3 +73,4 @@ export const StorytellingSection = () => {
     </section>
   );
 };
+

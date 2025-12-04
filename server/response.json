@@ -1,0 +1,183 @@
+{
+  "success": true,
+  "data": {
+    "data": {
+      "id": 38462933,
+      "parentDealId": null,
+      "title": "Lead LP Marketing Olfativo — Marca Node",
+      "accountId": 259014,
+      "startTime": "2025-12-04T12:36:36.415Z",
+      "endTime": null,
+      "wonAt": null,
+      "lostAt": null,
+      "organization": null,
+      "person": {
+        "id": 65196406,
+        "accountId": 259014,
+        "name": "Teste Node",
+        "email": null,
+        "organization": null,
+        "cpf": null,
+        "role": null,
+        "ranking": 0,
+        "description": null,
+        "birthday": null,
+        "avatar": null,
+        "createdAt": "2025-12-04T12:36:36.000Z",
+        "updatedAt": "2025-12-04T12:36:36.000Z",
+        "products": [],
+        "contact": {
+          "email": null,
+          "work": null,
+          "mobile": null,
+          "fax": null,
+          "ramal": null,
+          "radio": null,
+          "whatsapp": null,
+          "facebook": null,
+          "twitter": null,
+          "linkedIn": null,
+          "skype": null,
+          "instagram": null
+        },
+        "address": {
+          "country": "Brasil",
+          "district": null,
+          "streetName": null,
+          "streetNumber": null,
+          "additionalInfo": null,
+          "postalCode": null,
+          "state": null,
+          "city": null
+        },
+        "category": null,
+        "leadOrigin": null,
+        "author": {
+          "accountId": 259014,
+          "id": 314029,
+          "name": "Caio Cezar"
+        },
+        "ownerUser": {
+          "accountId": 259014,
+          "id": 314029,
+          "name": "Caio Cezar"
+        },
+        "allowedUsers": [
+          {
+            "accountId": 259014,
+            "id": 314029,
+            "name": "Caio Cezar"
+          },
+          {
+            "accountId": 259014,
+            "id": 471445,
+            "name": "Eduardo Murilo"
+          },
+          {
+            "accountId": 259014,
+            "id": 534666,
+            "name": "SIMONE GREGHI"
+          },
+          {
+            "accountId": 259014,
+            "id": 541598,
+            "name": "Luana Paião"
+          },
+          {
+            "accountId": 259014,
+            "id": 547714,
+            "name": "Marisa Castro"
+          },
+          {
+            "accountId": 259014,
+            "id": 549296,
+            "name": "Aline da Cruz"
+          },
+          {
+            "accountId": 259014,
+            "id": 597896,
+            "name": "Beatriz Almeida Miranda"
+          },
+          {
+            "accountId": 259014,
+            "id": 608107,
+            "name": "Camila"
+          },
+          {
+            "accountId": 259014,
+            "id": 703701,
+            "name": "Rui Nogueira"
+          },
+          {
+            "accountId": 259014,
+            "id": 731262,
+            "name": "Anna Carolina"
+          },
+          {
+            "accountId": 259014,
+            "id": 755493,
+            "name": "Evelyn"
+          },
+          {
+            "accountId": 259014,
+            "id": 769507,
+            "name": "Leandro"
+          },
+          {
+            "accountId": 259014,
+            "id": 780425,
+            "name": "Matheus"
+          },
+          {
+            "accountId": 259014,
+            "id": 810558,
+            "name": "Josuel"
+          },
+          {
+            "accountId": 259014,
+            "id": 860468,
+            "name": "comercial1"
+          }
+        ],
+        "_webUrl": "https://web.agendor.com.br/sistema/pessoas/historico.php?id=65196406"
+      },
+      "author": {
+        "accountId": 259014,
+        "id": 314029,
+        "name": "Caio Cezar"
+      },
+      "dealStage": {
+        "id": 3379125,
+        "name": "OPORTUNIDADE",
+        "sequence": 1,
+        "funnel": {
+          "id": 813360,
+          "name": "FUNIL LP TERCEIRIZADA"
+        }
+      },
+      "dealStatus": {
+        "id": 1,
+        "name": "Em andamento"
+      },
+      "lossReason": null,
+      "owner": {
+        "accountId": 259014,
+        "id": 314029,
+        "name": "Caio Cezar"
+      },
+      "description": "\n        Dados do Formulário:\n        - Nome da Marca: Marca Node\n        - Segmento: Confecção\n        - Newsletter: Sim\n        ",
+      "createdAt": "2025-12-04T12:36:36.435Z",
+      "updatedAt": "2025-12-04T12:36:36.434Z",
+      "ranking": 0,
+      "value": 0,
+      "products_entities": [],
+      "products": [],
+      "allowedUsers": [],
+      "_email": "lead-259014n38462933@to.agendor.com.br",
+      "_webUrl": "https://web.agendor.com.br/sistema/negocios/historico.php?id=38462933"
+    },
+    "links": {
+      "self": "https://api.agendor.com.br/v3/people/65196406/deals"
+    }
+  }
+}

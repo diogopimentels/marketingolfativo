@@ -2,31 +2,69 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Send, Check } from "lucide-react";
+import { Send, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { submitToAgendor } from "@/services/agendor";
 
 export const FormSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    nomeCompleto: "",
+    email: "",
+    telefone: "",
+    nomeMarca: "",
+    temMarca: "confeccao",
+    newsletter: true
+  });
+  const ebookUrl = "https://drive.google.com/uc?export=download&id=1NoFqm9FwG9gEGVLnoC4K7Egc0J8DAyda";
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, type, checked, name } = e.target;
+    if (type === 'radio') {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    } else if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [id]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [id]: value }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast({
-      title: "Lorem ipsum dolor sit amet",
-      description: "Consectetur adipiscing elit, sed do eiusmod tempor.",
-    });
-    
-    setIsSubmitting(false);
+
+    try {
+      await submitToAgendor({
+        ...formData,
+        temMarca: formData.temMarca === 'confeccao' ? 'Confecção' : 'Atacado'
+      });
+
+      toast({
+        title: "Sucesso!",
+        description: "Seu E-book está sendo baixado!",
+      });
+
+      setIsSuccess(true);
+
+      // Attempt auto-download
+      window.open(ebookUrl, '_blank');
+
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Houve um problema ao enviar seus dados. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <section className="section-spacing bg-secondary/30">
+    <section id="baixar" className="section-spacing bg-secondary/30">
       <div className="container-premium">
         <motion.div
           ref={ref}
@@ -36,102 +74,168 @@ export const FormSection = () => {
           className="max-w-2xl mx-auto"
         >
           {/* Section Header */}
-          <div className="text-center mb-12">
+          <div className="text-left md:text-center mb-12">
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
-              Contato
+              Download Gratuito
             </span>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Fale conosco
+              Baixe o E-book Exclusivo Agora!
             </h2>
             <p className="text-muted-foreground text-lg">
-              Neque porro quisquam est qui dolorem ipsum quia dolor sit amet.
+              Em poucos minutos você entende o poder do olfato na fidelização de clientes e aprende como aplicar isso de forma prática na sua marca de roupas.
             </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                  Lorem ipsum
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="input-premium"
-                  placeholder="Dolor sit amet"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                  Consectetur
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className="input-premium"
-                  placeholder="adipiscing@elit.com"
-                />
-              </div>
-            </div>
-
             <div>
-              <label htmlFor="company" className="block text-sm font-medium text-foreground mb-2">
-                Sed do eiusmod
+              <label htmlFor="nomeCompleto" className="block text-sm font-medium text-foreground mb-2">
+                Nome Completo
               </label>
               <input
                 type="text"
-                id="company"
+                id="nomeCompleto"
+                value={formData.nomeCompleto}
+                onChange={handleChange}
                 className="input-premium"
-                placeholder="Tempor incididunt"
+                placeholder="Queremos personalizar a sua experiência"
+                required
+                disabled={isSuccess}
               />
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">
-                Ut labore et dolore
+              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                E-mail
               </label>
-              <textarea
-                id="message"
-                rows={5}
-                className="input-premium resize-none"
-                placeholder="Magna aliqua ut enim ad minim veniam..."
+              <input
+                type="email"
+                id="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="input-premium"
+                placeholder="Queremos conhecer melhor a sua marca"
+                required
+                disabled={isSuccess}
               />
             </div>
 
-            <div className="flex items-start gap-3">
+            <div>
+              <label htmlFor="telefone" className="block text-sm font-medium text-foreground mb-2">
+                Telefone
+              </label>
+              <input
+                type="tel"
+                id="telefone"
+                value={formData.telefone}
+                onChange={handleChange}
+                className="input-premium"
+                placeholder="Digite seu número de telefone"
+                required
+                disabled={isSuccess}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="nomeMarca" className="block text-sm font-medium text-foreground mb-2">
+                Nome da sua marca
+              </label>
+              <input
+                type="text"
+                id="nomeMarca"
+                value={formData.nomeMarca}
+                onChange={handleChange}
+                className="input-premium"
+                placeholder="Digite o nome da sua marca"
+                required
+                disabled={isSuccess}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Você tem marca de roupas ou confecção?
+              </label>
+              <div className="flex gap-6 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="temMarca"
+                    value="confeccao"
+                    checked={formData.temMarca === 'confeccao'}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-primary focus:ring-primary"
+                    required
+                    disabled={isSuccess}
+                  />
+                  <span className="text-foreground">Confecção</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="temMarca"
+                    value="atacado"
+                    checked={formData.temMarca === 'atacado'}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-primary focus:ring-primary"
+                    required
+                    disabled={isSuccess}
+                  />
+                  <span className="text-foreground">Atacado</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
-                id="consent"
-                className="mt-1 w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                id="newsletter"
+                checked={formData.newsletter}
+                onChange={handleChange}
+                className="w-4 h-4 text-primary focus:ring-primary rounded"
+                disabled={isSuccess}
               />
-              <label htmlFor="consent" className="text-sm text-muted-foreground">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore.
+              <label htmlFor="newsletter" className="text-sm text-muted-foreground cursor-pointer">
+                Quero receber novidades e conteúdos exclusivos.
               </label>
             </div>
 
-            <Button
-              type="submit"
-              variant="hero"
-              size="lg"
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                  Lorem ipsum...
-                </>
-              ) : (
-                <>
-                  Dolor Sit Amet
-                  <Send className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </Button>
+            {isSuccess ? (
+              <Button
+                type="button"
+                variant="hero"
+                size="lg"
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={() => window.open(ebookUrl, '_blank')}
+              >
+                BAIXAR E-BOOK
+                <Download className="w-5 h-5 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                variant="hero"
+                size="lg"
+                className="w-full"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    BAIXAR AGORA
+                    <Download className="w-5 h-5 ml-2" />
+                  </>
+                )}
+              </Button>
+            )}
           </form>
         </motion.div>
       </div>
     </section>
   );
 };
+

@@ -1,0 +1,12 @@
+Custom Fields found: 1
+
+Field: PÚBLICO (ID: 5868, Type: multiselect)
+  - Option: CLIENTE RECORRENTE (ID: 6567)
+  - Option: CLIENTE DE 1º COMPRA (ID: 6568)
+  - Option: EX CLIENTE (ID: 6569)
+  - Option: INDICADO (ID: 6570)
+  - Option: QUASE CLIENTE (ID: 6571)
+  - Option: NÃO CLIENTE (ID: 6572)
+  - Option: LEVANTADA DE MÃO (ID: 6573)
+  - Option: SEGUIDOR (ID: 6574)
+  - Option: ANÔNIMO (ID: 6575)
