@@ -17,11 +17,20 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const PORT = 3002;
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use((req, res, next) => {
+    console.log(`📨 Request recebido: [${req.method}] ${req.url} | IP: ${req.ip}`);
+    next();
+});
 app.use(express.json());
 
-app.post('/api/lead', async (req, res) => {
-    console.log('Received request on /api/lead');
+app.post('/api/agendor', async (req, res) => {
+    console.log('Received request on /api/agendor');
     try {
         const { nomeCompleto, email, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
@@ -151,8 +160,8 @@ app.post('/api/facebook-conversion', async (req, res) => {
 });
 
 if (process.argv[1] === __filename) {
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 Servidor rodando na porta ${PORT} e acessível na rede!`);
     });
 }
 

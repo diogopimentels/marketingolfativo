@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { submitToAgendor } from "@/services/agendor";
+// import { submitToAgendor } from "@/services/agendor"; // Removed in favor of direct backend call
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
@@ -54,35 +54,47 @@ export const FormSection = () => {
     const eventId = uuidv4();
     const userAgent = navigator.userAgent;
 
-    // 2. Browser Tracking (Pixel Nativo - Modo Raiz)
-    // Dispara visualmente logo de cara
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Lead', {}, { eventID: eventId });
+    // ============================================================
+    // ETAPA 1: FACEBOOK (Prioridade Máxima - Dispara antes de tudo)
+    // ============================================================
+
+    // A. Browser Tracking (Pixel Nativo)
+    try {
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Lead', {}, { eventID: eventId });
+      }
+    } catch (pixelError) {
+      console.error("Erro Pixel Browser:", pixelError);
     }
 
+    // B. Server Tracking (CAPI)
+    // Usando caminho relativo para ser tratado pelo Vercel Rewrites ou Vite Proxy
     try {
-      // 3. Envia para o CRM (Agendor)
-      await submitToAgendor({
+      await axios.post(`/api/facebook-conversion`, {
+        // Dados do Corpo (Body)
+        email: formData.email,
+        eventId: eventId,
+        userAgent: userAgent
+      });
+
+      console.log("✅ Evento CAPI (Facebook) enviado com sucesso!");
+    } catch (capiError) {
+      // Se der erro aqui, apenas logamos e continuamos para o Agendor
+      console.error("⚠️ Erro ao enviar CAPI (Facebook), mas seguindo o fluxo:", capiError);
+    }
+
+    // ============================================================
+    // ETAPA 2: CRM (Agendor) e Download
+    // ============================================================
+    try {
+      // Envia para o CRM via Backend (Caminho Relativo)
+      await axios.post('/api/agendor', {
         ...formData,
         temMarca: formData.temMarca
       });
+      console.log("✅ Lead salvo no Agendor!");
 
-      // 4. Server Tracking (API de Conversão - CAPI)
-      // Enviamos apenas se o CRM aceitar, ou enviamos em paralelo.
-      // Aqui usamos formData.email (o erro estava aqui antes)
-      try {
-        await axios.post(`/api/facebook-conversion`, {
-          email: formData.email,
-          eventId: eventId,
-          userAgent: userAgent
-        });
-        console.log("Evento CAPI enviado com sucesso");
-      } catch (capiError) {
-        // Se a API do Face falhar, não bloqueamos o usuário de baixar o ebook
-        console.error("Erro ao enviar evento CAPI", capiError);
-      }
-
-      // 5. Sucesso e Download
+      // Sucesso e Download
       toast({
         title: "Sucesso!",
         description: "Seu E-book está sendo baixado!",
@@ -91,12 +103,11 @@ export const FormSection = () => {
       setIsSuccess(true);
 
       // Download automático
+      // Usando href é melhor para mobile que window.open
       window.location.href = ebookUrl;
 
-
-
     } catch (error) {
-      console.error(error);
+      console.error("❌ Erro CRÍTICO no Agendor:", error);
       toast({
         title: "Erro",
         description: "Houve um problema ao enviar seus dados. Tente novamente.",
