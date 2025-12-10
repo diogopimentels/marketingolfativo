@@ -2,10 +2,10 @@ import axios from 'axios';
 import crypto from 'crypto';
 
 export default async function handler(req, res) {
-    // CORS setup
+    // CORS Setup
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,PUT');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') return res.status(200).end();
@@ -14,7 +14,9 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        // 1. FACEBOOK (Mantemos try/catch para não travar se falhar)
+        console.log("🚀 Processando Lead:", email);
+
+        // 1. FACEBOOK CAPI (Independente)
         try {
             if (process.env.FB_PIXEL_ID && process.env.FB_ACCESS_TOKEN) {
                 const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
@@ -31,58 +33,45 @@ export default async function handler(req, res) {
                     }
                 );
             }
-        } catch (e) { console.error('Erro Face:', e.message); }
+        } catch (e) { console.error('⚠️ Erro Face:', e.message); }
 
-        // 2. AGENDOR (Agora com Debug Crítico)
-        let rawToken = process.env.AGENDOR_TOKEN || "";
-        // Remove aspas duplas ou simples que podem ter vindo do .env
-        const cleanToken = rawToken.replace(/['"]+/g, '').trim();
-
-        if (!cleanToken) {
-            throw new Error("Token do Agendor não encontrado nas variáveis de ambiente da Vercel!");
-        }
-
-        console.log("Enviando para Agendor:", { email, nomeCompleto });
-
+        // 2. AGENDOR CRM (Try/Catch Silencioso)
         try {
-            const response = await axios.post(
-                'https://api.agendor.com.br/v3/people/upsert',
-                {
-                    email: email,
-                    name: nomeCompleto,
-                    contact: {
+            const rawToken = process.env.AGENDOR_TOKEN || "";
+            const cleanToken = rawToken.replace(/['"]+/g, '').trim();
+
+            if (cleanToken) {
+                await axios.post(
+                    'https://api.agendor.com.br/v3/people/upsert',
+                    {
                         email: email,
-                        mobile: telefone,
-                        work: telefone
+                        name: nomeCompleto,
+                        contact: {
+                            email: email,
+                            mobile: telefone, // O Agendor pode validar formato aqui
+                            work: telefone
+                        },
+                        role: nomeMarca,
+                        description: `Segmento: ${temMarca} | Newsletter: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
                     },
-                    role: nomeMarca, // Usando cargo para guardar a marca
-                    description: `Segmento: ${temMarca} | Newsletter: ${newsletter} | Origem: LP`
-                },
-                {
-                    headers: {
-                        'Authorization': `Token ${cleanToken}`, // Garante o formato correto
-                        'Content-Type': 'application/json'
+                    {
+                        headers: { 'Authorization': `Token ${cleanToken}`, 'Content-Type': 'application/json' }
                     }
-                }
-            );
-            console.log("✅ Sucesso Agendor:", response.status);
+                );
+                console.log("✅ Agendor Sucesso");
+            }
         } catch (agendorError) {
-            // AQUI ESTÁ O SEGREDO: Pegamos a mensagem real do erro
-            const errorData = agendorError.response?.data;
-            const errorMessage = JSON.stringify(errorData || agendorError.message);
-
-            console.error("❌ ERRO AGENDOR RETORNADO:", errorMessage);
-
-            // Retornamos ERRO para o frontend mostrar o toast vermelho
-            return res.status(400).json({
-                error: "Falha no CRM Agendor",
-                details: errorData || agendorError.message
-            });
+            // IMPORTANTE: Apenas logamos o erro, NÃO retornamos 400.
+            // Isso garante que o usuário consiga baixar o ebook mesmo se o telefone estiver errado.
+            console.error("⚠️ Agendor Recusou (Dados Inválidos ou Token):", agendorError.response?.data || agendorError.message);
         }
 
-        return res.status(200).json({ success: true });
+        // 3. RETORNO DE SUCESSO (Sempre)
+        // O usuário sempre recebe OK para prosseguir com o download
+        return res.status(200).json({ success: true, message: "Processado (com ou sem CRM)" });
 
     } catch (fatalError) {
-        return res.status(500).json({ error: fatalError.message });
+        console.error("🔥 Erro Fatal:", fatalError);
+        return res.status(500).json({ error: "Erro interno" });
     }
 }
