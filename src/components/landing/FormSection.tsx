@@ -54,11 +54,7 @@ export const FormSection = () => {
     const eventId = uuidv4();
     const userAgent = navigator.userAgent;
 
-    // ============================================================
-    // ETAPA 1: FACEBOOK (Prioridade Máxima - Dispara antes de tudo)
-    // ============================================================
-
-    // A. Browser Tracking (Pixel Nativo)
+    // 2. Browser Tracking (Pixel Nativo)
     try {
       if (typeof window !== 'undefined' && window.fbq) {
         window.fbq('track', 'Lead', {}, { eventID: eventId });
@@ -67,34 +63,20 @@ export const FormSection = () => {
       console.error("Erro Pixel Browser:", pixelError);
     }
 
-    // B. Server Tracking (CAPI)
-    // Usando caminho relativo para ser tratado pelo Vercel Rewrites ou Vite Proxy
     try {
-      await axios.post(`/api/facebook-conversion`, {
-        // Dados do Corpo (Body)
+      // 3. Server-Side Centralizado Vercel (CAPI + Agendor)
+      // Caminho relativo funciona perfeitamente na Vercel
+      await axios.post('/api/conversion', {
         email: formData.email,
         eventId: eventId,
-        userAgent: userAgent
+        userAgent: navigator.userAgent,
+        // Envie todos os dados do form para o backend processar o CRM
+        ...formData
       });
 
-      console.log("✅ Evento CAPI (Facebook) enviado com sucesso!");
-    } catch (capiError) {
-      // Se der erro aqui, apenas logamos e continuamos para o Agendor
-      console.error("⚠️ Erro ao enviar CAPI (Facebook), mas seguindo o fluxo:", capiError);
-    }
+      console.log("✅ Conversão enviada com sucesso!");
 
-    // ============================================================
-    // ETAPA 2: CRM (Agendor) e Download
-    // ============================================================
-    try {
-      // Envia para o CRM via Backend (Caminho Relativo)
-      await axios.post('/api/agendor', {
-        ...formData,
-        temMarca: formData.temMarca
-      });
-      console.log("✅ Lead salvo no Agendor!");
-
-      // Sucesso e Download
+      // 4. Sucesso e Download
       toast({
         title: "Sucesso!",
         description: "Seu E-book está sendo baixado!",
@@ -103,11 +85,10 @@ export const FormSection = () => {
       setIsSuccess(true);
 
       // Download automático
-      // Usando href é melhor para mobile que window.open
       window.location.href = ebookUrl;
 
     } catch (error) {
-      console.error("❌ Erro CRÍTICO no Agendor:", error);
+      console.error("❌ Erro ao enviar:", error);
       toast({
         title: "Erro",
         description: "Houve um problema ao enviar seus dados. Tente novamente.",
