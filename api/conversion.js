@@ -7,6 +7,7 @@ function cleanPhone(phone) {
 }
 
 export default async function handler(req, res) {
+    // Configuração CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -48,8 +49,8 @@ export default async function handler(req, res) {
             if (cleanToken) {
                 const authHeader = { headers: { 'Authorization': `Token ${cleanToken}` } };
 
-                // A. CRIAR PESSOA
-                console.log("👤 Upsert Pessoa...");
+                // A. UPSERT PESSOA
+                console.log("👤 Processando Pessoa...");
                 const personResponse = await axios.post(
                     'https://api.agendor.com.br/v3/people/upsert',
                     {
@@ -57,7 +58,7 @@ export default async function handler(req, res) {
                         name: nomeCompleto,
                         contact: { email: email, mobile_phone: phoneClean, work_phone: phoneClean },
                         role: nomeMarca,
-                        description: `Segmento: ${temMarca} | Origem: LP`
+                        description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
                     },
                     authHeader
                 );
@@ -65,40 +66,38 @@ export default async function handler(req, res) {
                 const personId = personResponse.data?.data?.id || personResponse.data?.id;
 
                 if (personId) {
-                    // B. BUSCAR FUNIL CORRETO (A Mágica acontece aqui)
+                    // B. BUSCA EXATA DE FUNIL
                     let targetStageId = null;
                     try {
-                        console.log("🔎 Buscando Funil 'TERCEIRIZADA'...");
                         const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', authHeader);
 
-                        // Debug: Ajuda a ver o que está vindo
-                        const funnelNames = funnelsRes.data.data.map(f => f.name);
-                        console.log("Nome dos Funis encontrados:", JSON.stringify(funnelNames));
+                        // Log para conferência
+                        const availableFunnels = funnelsRes.data.data.map(f => f.name);
+                        console.log("📋 Funis Encontrados:", JSON.stringify(availableFunnels));
 
-                        // Procura o funil pelo nome
-                        const targetFunnel = funnelsRes.data.data.find(f =>
-                            f.name && f.name.toUpperCase().includes("TERCEIRIZADA")
-                        );
+                        // Busca pelo nome exato "FUNIL LP TERCEIRIZADA" (ignorando maiúsculas/minúsculas)
+                        const targetFunnel = funnelsRes.data.data.find(f => {
+                            const name = (f.name || "").trim().toUpperCase();
+                            return name === "FUNIL LP TERCEIRIZADA" || name.includes("TERCEIRIZADA");
+                        });
 
                         if (targetFunnel && targetFunnel.stages && targetFunnel.stages.length > 0) {
                             targetStageId = targetFunnel.stages[0].id;
-                            console.log(`✅ Funil encontrado: ${targetFunnel.name} (Stage ID: ${targetStageId})`);
+                            console.log(`✅ Funil ALVO "${targetFunnel.name}" encontrado! ID Etapa: ${targetStageId}`);
                         } else {
-                            console.warn("⚠️ Funil 'TERCEIRIZADA' não encontrado. Usando padrão.");
+                            console.warn("⚠️ Funil 'FUNIL LP TERCEIRIZADA' não encontrado. Verifique o nome exato no log acima.");
                         }
                     } catch (funnelError) {
-                        console.error("Erro ao buscar funis:", funnelError.message);
+                        console.error("Erro busca funil:", funnelError.message);
                     }
 
                     // C. CRIAR NEGÓCIO
-                    const dealTitle = `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`;
                     const dealPayload = {
-                        title: dealTitle,
+                        title: `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`,
                         value: 0,
                         description: "Lead capturado via Landing Page."
                     };
 
-                    // Se achamos o funil certo, forçamos a etapa. Se não, vai pro padrão.
                     if (targetStageId) {
                         dealPayload.dealStage = targetStageId;
                     }
