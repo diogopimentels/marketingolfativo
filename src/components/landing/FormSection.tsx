@@ -20,7 +20,7 @@ export const FormSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     email: "",
@@ -71,8 +71,8 @@ export const FormSection = () => {
       // Enviamos apenas se o CRM aceitar, ou enviamos em paralelo.
       // Aqui usamos formData.email (o erro estava aqui antes)
       try {
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/facebook-conversion`, {
-          email: formData.email, 
+        await axios.post(`/api/facebook-conversion`, {
+          email: formData.email,
           eventId: eventId,
           userAgent: userAgent
         });
@@ -89,11 +89,11 @@ export const FormSection = () => {
       });
 
       setIsSuccess(true);
-      
+
       // Download automático
       window.location.href = ebookUrl;
 
-      
+
 
     } catch (error) {
       console.error(error);
