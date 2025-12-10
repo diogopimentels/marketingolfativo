@@ -1,8 +1,15 @@
 import axios from 'axios';
 import crypto from 'crypto';
 
+// Função auxiliar para limpar telefone (deixa apenas números)
+function cleanPhone(phone) {
+    if (!phone) return null;
+    const cleaned = phone.replace(/\D/g, ''); // Remove tudo que não é número
+    return cleaned;
+}
+
 export default async function handler(req, res) {
-    // CORS Setup
+    // Configuração CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -16,7 +23,7 @@ export default async function handler(req, res) {
 
         console.log("🚀 Processando Lead:", email);
 
-        // 1. FACEBOOK CAPI (Independente)
+        // 1. FACEBOOK CAPI
         try {
             if (process.env.FB_PIXEL_ID && process.env.FB_ACCESS_TOKEN) {
                 const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
@@ -35,40 +42,46 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error('⚠️ Erro Face:', e.message); }
 
-        // 2. AGENDOR CRM (Try/Catch Silencioso)
+        // 2. AGENDOR CRM
         try {
             const rawToken = process.env.AGENDOR_TOKEN || "";
             const cleanToken = rawToken.replace(/['"]+/g, '').trim();
+            const telefoneLimpo = cleanPhone(telefone);
 
             if (cleanToken) {
+                // Payload corrigido para API V3
+                const payload = {
+                    email: email,
+                    name: nomeCompleto,
+                    contact: {
+                        email: email,
+                        // CORREÇÃO CRÍTICA: Os campos V3 são mobile_phone e work_phone
+                        mobile_phone: telefoneLimpo,
+                        work_phone: telefoneLimpo
+                    },
+                    role: nomeMarca,
+                    description: `Marca: ${nomeMarca} | Segmento: ${temMarca} | Newsletter: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
+                };
+
+                console.log("📤 Enviando payload Agendor:", JSON.stringify(payload));
+
                 await axios.post(
                     'https://api.agendor.com.br/v3/people/upsert',
-                    {
-                        email: email,
-                        name: nomeCompleto,
-                        contact: {
-                            email: email,
-                            mobile: telefone, // O Agendor pode validar formato aqui
-                            work: telefone
-                        },
-                        role: nomeMarca,
-                        description: `Segmento: ${temMarca} | Newsletter: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
-                    },
+                    payload,
                     {
                         headers: { 'Authorization': `Token ${cleanToken}`, 'Content-Type': 'application/json' }
                     }
                 );
-                console.log("✅ Agendor Sucesso");
+                console.log("✅ Agendor Sucesso: Dados salvos!");
             }
         } catch (agendorError) {
-            // IMPORTANTE: Apenas logamos o erro, NÃO retornamos 400.
-            // Isso garante que o usuário consiga baixar o ebook mesmo se o telefone estiver errado.
-            console.error("⚠️ Agendor Recusou (Dados Inválidos ou Token):", agendorError.response?.data || agendorError.message);
+            // Log detalhado para sabermos o motivo da recusa
+            const motivo = agendorError.response?.data?.errors || agendorError.response?.data || agendorError.message;
+            console.error("❌ Agendor Recusou:", JSON.stringify(motivo));
         }
 
-        // 3. RETORNO DE SUCESSO (Sempre)
-        // O usuário sempre recebe OK para prosseguir com o download
-        return res.status(200).json({ success: true, message: "Processado (com ou sem CRM)" });
+        // Retorna sucesso para o usuário baixar o ebook
+        return res.status(200).json({ success: true });
 
     } catch (fatalError) {
         console.error("🔥 Erro Fatal:", fatalError);
