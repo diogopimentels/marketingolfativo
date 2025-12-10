@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        console.log("🚀 Iniciando processamento:", email);
+        console.log("🚀 Processando Lead:", email);
 
         // 1. FACEBOOK CAPI
         try {
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
                 const personId = personResponse.data?.data?.id || personResponse.data?.id;
 
                 if (personId) {
-                    // B. BUSCA DE FUNIL (COM TRAVA DE SEGURANÇA)
+                    // B. BUSCA DE FUNIL (TESTE DUPLO DE PALAVRAS-CHAVE)
                     const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', {
                         ...authHeader,
                         params: { limit: 100, enabled: true }
@@ -65,22 +65,23 @@ export default async function handler(req, res) {
 
                     const allFunnels = funnelsRes.data.data || [];
 
-                    // Busca EXATA pelo nome visto no log (com trim para garantir)
-                    const targetFunnel = allFunnels.find(f =>
-                        f.name && f.name.trim() === "FUNIL LP TERCEIRIZADA"
-                    );
+                    // Lógica: Tem que ter "LP" E tem que ter "TERCEIRIZADA" (no mesmo nome)
+                    const targetFunnel = allFunnels.find(f => {
+                        const name = (f.name || "").toUpperCase();
+                        return name.includes("LP") && name.includes("TERCEIRIZADA");
+                    });
 
                     if (targetFunnel && targetFunnel.stages && targetFunnel.stages.length > 0) {
                         const stageId = targetFunnel.stages[0].id;
                         console.log(`✅ Funil ALVO Localizado: "${targetFunnel.name}" (ID Etapa: ${stageId})`);
 
-                        // C. CRIAR NEGÓCIO (Somente se temos o ID da etapa)
+                        // C. CRIAR NEGÓCIO
                         await axios.post(
                             `https://api.agendor.com.br/v3/people/${personId}/deals`,
                             {
                                 title: `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`,
                                 value: 0,
-                                dealStage: stageId, // OBRIGATÓRIO PARA O FUNIL CERTO
+                                dealStage: stageId, // Só cria no funil correto
                                 description: "Lead capturado via Landing Page."
                             },
                             authHeader
@@ -88,10 +89,7 @@ export default async function handler(req, res) {
                         console.log("✅ 💼 Negócio criado no Funil LP TERCEIRIZADA!");
 
                     } else {
-                        // TRAVA DE SEGURANÇA:
-                        // Se não achou o funil, NÃO cria negócio genérico (para não cair no Instagram).
-                        // Apenas avisa no log para debug.
-                        console.error("⛔ ABORTANDO CRIAÇÃO DE NEGÓCIO: Funil 'FUNIL LP TERCEIRIZADA' não encontrado ou sem etapas.");
+                        console.error("⛔ ABORTANDO: Nenhum funil contém 'LP' e 'TERCEIRIZADA' simultaneamente.");
                         console.error("Funis disponíveis:", JSON.stringify(allFunnels.map(f => f.name)));
                     }
                 }
