@@ -2,19 +2,25 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Send, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { submitToAgendor } from "@/services/agendor";
 import { v4 as uuidv4 } from 'uuid';
-import ReactPixel from 'react-facebook-pixel';
 import axios from 'axios';
 
+// Interface para o Window ter o fbq tipado (TypeScript)
+declare global {
+  interface Window {
+    fbq: any;
+  }
+}
 
 export const FormSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     email: "",
@@ -23,6 +29,7 @@ export const FormSection = () => {
     temMarca: "Confecção Atacado",
     newsletter: true
   });
+
   const ebookUrl = "https://drive.google.com/uc?export=download&id=1NoFqm9FwG9gEGVLnoC4K7Egc0J8DAyda";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -43,43 +50,51 @@ export const FormSection = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // 1. Gera ID único para deduplicação
     const eventId = uuidv4();
     const userAgent = navigator.userAgent;
 
-    // Browser Tracking (Pixel)
-    // @ts-ignore
-    ReactPixel.track('Lead', {}, { eventID: eventId });
-
+    // 2. Browser Tracking (Pixel Nativo - Modo Raiz)
+    // Dispara visualmente logo de cara
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead', {}, { eventID: eventId });
+    }
 
     try {
+      // 3. Envia para o CRM (Agendor)
       await submitToAgendor({
         ...formData,
         temMarca: formData.temMarca
       });
 
-      // Server-Side Tracking (CAPI) via Backend
+      // 4. Server Tracking (API de Conversão - CAPI)
+      // Enviamos apenas se o CRM aceitar, ou enviamos em paralelo.
+      // Aqui usamos formData.email (o erro estava aqui antes)
       try {
         await axios.post(`${import.meta.env.VITE_API_URL}/api/facebook-conversion`, {
-          email: formData.email,
-          eventId,
-          userAgent
+          email: formData.email, 
+          eventId: eventId,
+          userAgent: userAgent
         });
-        console.log("CAPI event sent");
+        console.log("Evento CAPI enviado com sucesso");
       } catch (capiError) {
-        console.error("Failed to send CAPI event", capiError);
+        // Se a API do Face falhar, não bloqueamos o usuário de baixar o ebook
+        console.error("Erro ao enviar evento CAPI", capiError);
       }
 
+      // 5. Sucesso e Download
       toast({
         title: "Sucesso!",
         description: "Seu E-book está sendo baixado!",
       });
 
       setIsSuccess(true);
-
-      // Attempt auto-download
+      
+      // Download automático
       window.open(ebookUrl, '_blank');
 
     } catch (error) {
+      console.error(error);
       toast({
         title: "Erro",
         description: "Houve um problema ao enviar seus dados. Tente novamente.",
@@ -253,4 +268,3 @@ export const FormSection = () => {
     </section>
   );
 };
-
