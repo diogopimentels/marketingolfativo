@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        console.log("🚀 Processando:", email);
+        console.log("🚀 Processando Lead:", email);
 
         // 1. FACEBOOK CAPI
         try {
@@ -40,59 +40,62 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error('Erro Face:', e.message); }
 
-        // 2. AGENDOR CRM (FLUXO DUPLO: PESSOA -> NEGÓCIO)
+        // 2. AGENDOR CRM (FLUXO DUPLO)
         try {
             const rawToken = process.env.AGENDOR_TOKEN || "";
             const cleanToken = rawToken.replace(/['"]+/g, '').trim();
             const phoneClean = cleanPhone(telefone);
 
             if (cleanToken) {
-                // PASSO A: Criar/Atualizar Pessoa
-                const personPayload = {
-                    email: email,
-                    name: nomeCompleto,
-                    contact: {
-                        email: email,
-                        mobile: phoneClean, // Campo 'mobile' (V3 legacy) costuma ser mais seguro, ou 'mobile_phone'
-                        work: phoneClean
-                    },
-                    role: nomeMarca,
-                    description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
-                };
-
-                console.log("👤 Criando Pessoa...");
+                // A. CRIAR PESSOA
+                console.log("👤 Criando Pessoa no Agendor...");
                 const personResponse = await axios.post(
                     'https://api.agendor.com.br/v3/people/upsert',
-                    personPayload,
+                    {
+                        email: email,
+                        name: nomeCompleto,
+                        contact: {
+                            email: email,
+                            mobile_phone: phoneClean,
+                            work_phone: phoneClean
+                        },
+                        role: nomeMarca,
+                        description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
+                    },
                     { headers: { 'Authorization': `Token ${cleanToken}` } }
                 );
 
-                // PASSO B: Criar Negócio (Se conseguiu o ID da pessoa)
-                // O Agendor retorna os dados dentro de data.data.id
-                const personId = personResponse.data?.data?.id;
+                // Captura o ID de forma segura (tenta os dois caminhos possíveis)
+                const personId = personResponse.data?.data?.id || personResponse.data?.id;
 
                 if (personId) {
-                    console.log(`💼 Criando Negócio para ID: ${personId}`);
+                    console.log(`✅ Pessoa identificada (ID: ${personId}). Criando Negócio...`);
 
+                    // B. CRIAR NEGÓCIO (Sem forçar etapa para evitar erro)
                     const dealTitle = `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`;
 
-                    await axios.post(
-                        `https://api.agendor.com.br/v3/people/${personId}/deals`,
-                        {
-                            title: dealTitle,
-                            dealStage: 1, // 1 = Primeira etapa do funil (padrão)
-                            value: 0
-                        },
-                        { headers: { 'Authorization': `Token ${cleanToken}` } }
-                    );
-                    console.log("✅ Negócio Criado com Sucesso!");
+                    try {
+                        await axios.post(
+                            `https://api.agendor.com.br/v3/people/${personId}/deals`,
+                            {
+                                title: dealTitle,
+                                value: 0,
+                                description: "Lead capturado via Landing Page. Verificar dados de contato."
+                                // dealStage removido para usar o funil padrão
+                            },
+                            { headers: { 'Authorization': `Token ${cleanToken}` } }
+                        );
+                        console.log("✅ 💼 Negócio Criado com Sucesso!");
+                    } catch (dealError) {
+                        console.error("❌ Erro ao criar Negócio:", dealError.response?.data || dealError.message);
+                    }
+
                 } else {
-                    console.warn("⚠️ Pessoa criada, mas ID não retornado. Negócio não criado.");
+                    console.error("⚠️ Pessoa criada, mas ID não encontrado na resposta:", JSON.stringify(personResponse.data));
                 }
             }
         } catch (agendorError) {
-            // Logamos o erro mas não travamos o site
-            console.error("⚠️ Erro CRM:", agendorError.response?.data || agendorError.message);
+            console.error("⚠️ Erro Geral CRM:", agendorError.response?.data || agendorError.message);
         }
 
         return res.status(200).json({ success: true, message: "Lead processado" });
