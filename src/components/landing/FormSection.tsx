@@ -91,7 +91,9 @@ export const FormSection = () => {
       setIsSuccess(true);
       
       // Download automático
-      window.open(ebookUrl, '_blank');
+      window.location.href = ebookUrl;
+
+      
 
     } catch (error) {
       console.error(error);
