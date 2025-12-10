@@ -7,7 +7,6 @@ function cleanPhone(phone) {
 }
 
 export default async function handler(req, res) {
-    // Configuração CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -40,65 +39,79 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error('Erro Face:', e.message); }
 
-        // 2. AGENDOR CRM (FLUXO DUPLO)
+        // 2. AGENDOR CRM
         try {
             const rawToken = process.env.AGENDOR_TOKEN || "";
             const cleanToken = rawToken.replace(/['"]+/g, '').trim();
             const phoneClean = cleanPhone(telefone);
 
             if (cleanToken) {
+                const authHeader = { headers: { 'Authorization': `Token ${cleanToken}` } };
+
                 // A. CRIAR PESSOA
-                console.log("👤 Criando Pessoa no Agendor...");
+                console.log("👤 Upsert Pessoa...");
                 const personResponse = await axios.post(
                     'https://api.agendor.com.br/v3/people/upsert',
                     {
                         email: email,
                         name: nomeCompleto,
-                        contact: {
-                            email: email,
-                            mobile_phone: phoneClean,
-                            work_phone: phoneClean
-                        },
+                        contact: { email: email, mobile_phone: phoneClean, work_phone: phoneClean },
                         role: nomeMarca,
-                        description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
+                        description: `Segmento: ${temMarca} | Origem: LP`
                     },
-                    { headers: { 'Authorization': `Token ${cleanToken}` } }
+                    authHeader
                 );
 
-                // Captura o ID de forma segura (tenta os dois caminhos possíveis)
                 const personId = personResponse.data?.data?.id || personResponse.data?.id;
 
                 if (personId) {
-                    console.log(`✅ Pessoa identificada (ID: ${personId}). Criando Negócio...`);
-
-                    // B. CRIAR NEGÓCIO (Sem forçar etapa para evitar erro)
-                    const dealTitle = `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`;
-
+                    // B. BUSCAR FUNIL CORRETO (A Mágica acontece aqui)
+                    let targetStageId = null;
                     try {
-                        await axios.post(
-                            `https://api.agendor.com.br/v3/people/${personId}/deals`,
-                            {
-                                title: dealTitle,
-                                value: 0,
-                                description: "Lead capturado via Landing Page. Verificar dados de contato."
-                                // dealStage removido para usar o funil padrão
-                            },
-                            { headers: { 'Authorization': `Token ${cleanToken}` } }
+                        console.log("🔎 Buscando Funil 'TERCEIRIZADA'...");
+                        const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', authHeader);
+
+                        // Procura o funil pelo nome
+                        const targetFunnel = funnelsRes.data.data.find(f =>
+                            f.name && f.name.toUpperCase().includes("TERCEIRIZADA")
                         );
-                        console.log("✅ 💼 Negócio Criado com Sucesso!");
-                    } catch (dealError) {
-                        console.error("❌ Erro ao criar Negócio:", dealError.response?.data || dealError.message);
+
+                        if (targetFunnel && targetFunnel.stages && targetFunnel.stages.length > 0) {
+                            targetStageId = targetFunnel.stages[0].id;
+                            console.log(`✅ Funil encontrado: ${targetFunnel.name} (Stage ID: ${targetStageId})`);
+                        } else {
+                            console.warn("⚠️ Funil 'TERCEIRIZADA' não encontrado. Usando padrão.");
+                        }
+                    } catch (funnelError) {
+                        console.error("Erro ao buscar funis:", funnelError.message);
                     }
 
-                } else {
-                    console.error("⚠️ Pessoa criada, mas ID não encontrado na resposta:", JSON.stringify(personResponse.data));
+                    // C. CRIAR NEGÓCIO
+                    const dealTitle = `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`;
+                    const dealPayload = {
+                        title: dealTitle,
+                        value: 0,
+                        description: "Lead capturado via Landing Page."
+                    };
+
+                    // Se achamos o funil certo, forçamos a etapa. Se não, vai pro padrão.
+                    if (targetStageId) {
+                        dealPayload.dealStage = targetStageId;
+                    }
+
+                    await axios.post(
+                        `https://api.agendor.com.br/v3/people/${personId}/deals`,
+                        dealPayload,
+                        authHeader
+                    );
+                    console.log("✅ 💼 Negócio Criado no Funil Correto!");
                 }
             }
         } catch (agendorError) {
-            console.error("⚠️ Erro Geral CRM:", agendorError.response?.data || agendorError.message);
+            console.error("⚠️ Erro CRM:", agendorError.response?.data || agendorError.message);
         }
 
-        return res.status(200).json({ success: true, message: "Lead processado" });
+        return res.status(200).json({ success: true });
 
     } catch (fatalError) {
         console.error("🔥 Erro Fatal:", fatalError);
