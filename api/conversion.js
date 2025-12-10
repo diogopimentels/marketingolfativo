@@ -18,9 +18,9 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        console.log("🚀 Processando:", email);
+        console.log("🚀 Iniciando processamento:", email);
 
-        // 1. FACEBOOK (Ignora erro para focar no CRM)
+        // 1. FACEBOOK CAPI
         try {
             if (process.env.FB_PIXEL_ID && process.env.FB_ACCESS_TOKEN) {
                 const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
@@ -32,82 +32,72 @@ export default async function handler(req, res) {
         } catch (e) { console.error('Face ignorado:', e.message); }
 
         // 2. AGENDOR CRM
-        const rawToken = process.env.AGENDOR_TOKEN || "";
-        const cleanToken = rawToken.replace(/['"]+/g, '').trim();
-        const phoneClean = cleanPhone(telefone);
+        try {
+            const rawToken = process.env.AGENDOR_TOKEN || "";
+            const cleanToken = rawToken.replace(/['"]+/g, '').trim();
+            const phoneClean = cleanPhone(telefone);
 
-        if (!cleanToken) throw new Error("Token Agendor ausente");
+            if (cleanToken) {
+                const authHeader = { headers: { 'Authorization': `Token ${cleanToken}` } };
 
-        const authHeader = { headers: { 'Authorization': `Token ${cleanToken}` } };
-
-        // A. UPSERT PESSOA
-        console.log("👤 Criando Pessoa...");
-        const personRes = await axios.post(
-            'https://api.agendor.com.br/v3/people/upsert',
-            {
-                email: email,
-                name: nomeCompleto,
-                contact: { email: email, mobile_phone: phoneClean, work_phone: phoneClean },
-                role: nomeMarca,
-                description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
-            },
-            authHeader
-        );
-
-        const personId = personRes.data?.data?.id || personRes.data?.id;
-        console.log("✅ Pessoa ID:", personId);
-
-        if (personId) {
-            // B. BUSCAR FUNIL
-            console.log("🔎 Buscando Funil...");
-            const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', {
-                ...authHeader,
-                params: { limit: 100, enabled: true }
-            });
-
-            const allFunnels = funnelsRes.data.data || [];
-            const targetFunnel = allFunnels.find(f => {
-                const name = (f.name || "").toUpperCase();
-                return name.includes("LP TERCEIRIZADA");
-            });
-
-            let stageId = null;
-            if (targetFunnel && targetFunnel.stages && targetFunnel.stages.length > 0) {
-                stageId = targetFunnel.stages[0].id;
-                console.log(`✅ Funil Encontrado: ${targetFunnel.name} (Stage ID: ${stageId})`);
-            } else {
-                console.warn("⚠️ Funil LP TERCEIRIZADA não achado. Usando padrão.");
-            }
-
-            // C. CRIAR NEGÓCIO (AQUI ESTÁ O DEBUG CRÍTICO)
-            try {
-                const dealPayload = {
-                    title: `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`,
-                    value: 0,
-                    description: "Lead capturado via Landing Page.",
-                    ...(stageId && { dealStage: stageId }) // Só envia se achou o ID
-                };
-
-                console.log("💼 Tentando criar negócio com payload:", JSON.stringify(dealPayload));
-
-                await axios.post(
-                    `https://api.agendor.com.br/v3/people/${personId}/deals`,
-                    dealPayload,
+                // A. UPSERT PESSOA
+                console.log("👤 Upsert Pessoa...");
+                const personResponse = await axios.post(
+                    'https://api.agendor.com.br/v3/people/upsert',
+                    {
+                        email: email,
+                        name: nomeCompleto,
+                        contact: { email: email, mobile_phone: phoneClean, work_phone: phoneClean },
+                        role: nomeMarca,
+                        description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
+                    },
                     authHeader
                 );
-                console.log("✅ Negócio criado!");
 
-            } catch (dealError) {
-                // AGORA VAMOS VER O ERRO!
-                const msg = dealError.response?.data || dealError.message;
-                console.error("❌ ERRO AO CRIAR DEAL:", JSON.stringify(msg));
+                const personId = personResponse.data?.data?.id || personResponse.data?.id;
 
-                // Retorna 400 para o frontend mostrar o erro vermelho
-                return res.status(400).json({
-                    error: "Erro na criação do Negócio",
-                    detalhes: msg
-                });
+                if (personId) {
+                    // B. BUSCA DE FUNIL (COM TRAVA DE SEGURANÇA)
+                    const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', {
+                        ...authHeader,
+                        params: { limit: 100, enabled: true }
+                    });
+
+                    const allFunnels = funnelsRes.data.data || [];
+
+                    // Busca EXATA pelo nome visto no log (com trim para garantir)
+                    const targetFunnel = allFunnels.find(f =>
+                        f.name && f.name.trim() === "FUNIL LP TERCEIRIZADA"
+                    );
+
+                    if (targetFunnel && targetFunnel.stages && targetFunnel.stages.length > 0) {
+                        const stageId = targetFunnel.stages[0].id;
+                        console.log(`✅ Funil ALVO Localizado: "${targetFunnel.name}" (ID Etapa: ${stageId})`);
+
+                        // C. CRIAR NEGÓCIO (Somente se temos o ID da etapa)
+                        await axios.post(
+                            `https://api.agendor.com.br/v3/people/${personId}/deals`,
+                            {
+                                title: `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`,
+                                value: 0,
+                                dealStage: stageId, // OBRIGATÓRIO PARA O FUNIL CERTO
+                                description: "Lead capturado via Landing Page."
+                            },
+                            authHeader
+                        );
+                        console.log("✅ 💼 Negócio criado no Funil LP TERCEIRIZADA!");
+
+                    } else {
+                        // TRAVA DE SEGURANÇA:
+                        // Se não achou o funil, NÃO cria negócio genérico (para não cair no Instagram).
+                        // Apenas avisa no log para debug.
+                        console.error("⛔ ABORTANDO CRIAÇÃO DE NEGÓCIO: Funil 'FUNIL LP TERCEIRIZADA' não encontrado ou sem etapas.");
+                        console.error("Funis disponíveis:", JSON.stringify(allFunnels.map(f => f.name)));
+                    }
+                }
             }
+        } catch (agendorError) {
+            console.error("⚠️ Erro CRM:", agendorError.response?.data || agendorError.message);
         }
 
         return res.status(200).json({ success: true });
