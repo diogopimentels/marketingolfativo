@@ -52,37 +52,71 @@ export default async function handler(req, res) {
             );
             personId = personRes.data?.data?.id || personRes.data?.id;
         } catch (err) {
-            // Retorna erro se falhar na pessoa
             return res.status(400).json({ error: "Erro Pessoa", details: err.response?.data || err.message });
         }
 
         if (!personId) return res.status(500).json({ error: "ID Pessoa não retornado" });
 
-        // B. BUSCA DETALHES FUNIL 813360
-        console.log("🔎 Buscando Funil 813360...");
-        let firstStageId = null;
+        // B. BUSCA FUNIL POR NOME (LISTA COMPLETA)
+        console.log("🔎 Listando TODOS os funis disponíveis...");
 
         try {
-            const funnelRes = await axios.get('https://api.agendor.com.br/v3/funnels/813360', authHeader);
+            const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', {
+                ...authHeader,
+                params: { limit: 100, enabled: true }
+            });
 
-            // LOG CRÍTICO PARA DEBUG:
-            console.log("📦 Resposta Funil:", JSON.stringify(funnelRes.data));
+            const allFunnels = funnelsRes.data.data || [];
 
-            const funnelData = funnelRes.data.data || funnelRes.data;
-            const stages = funnelData.stages || [];
+            // LOG CRÍTICO: Mostra TODOS os funis com ID e nome
+            const funnelList = allFunnels.map(f => ({ id: f.id, name: f.name }));
+            console.log("� FUNIS DISPONÍVEIS:", JSON.stringify(funnelList, null, 2));
 
-            if (stages.length > 0) {
-                firstStageId = stages[0].id;
-                console.log(`✅ ID da Etapa: ${firstStageId}`);
-            } else {
-                return res.status(400).json({ error: "Funil 813360 sem etapas", raw_response: funnelRes.data });
+            // Procura pelo nome que contém "LP" e "TERCEIRIZADA"
+            const targetFunnel = allFunnels.find(f => {
+                const name = (f.name || "").toUpperCase();
+                return name.includes("LP") && name.includes("TERCEIRIZADA");
+            });
+
+            if (!targetFunnel) {
+                // SE NÃO ACHAR, RETORNA ERRO COM A LISTA COMPLETA
+                return res.status(400).json({
+                    error: "Funil 'LP TERCEIRIZADA' não encontrado",
+                    funis_disponiveis: funnelList
+                });
             }
-        } catch (err) {
-            return res.status(400).json({ error: "Erro ao buscar Funil 813360", details: err.response?.data || err.message });
-        }
 
-        // C. CRIAR NEGÓCIO
-        try {
+            // Tenta pegar as stages do objeto da lista primeiro
+            let firstStageId = null;
+
+            if (targetFunnel.stages && targetFunnel.stages.length > 0) {
+                // Se a lista já trouxe as stages, usa direto
+                firstStageId = targetFunnel.stages[0].id;
+                console.log(`✅ Funil "${targetFunnel.name}" (ID: ${targetFunnel.id}) - Stage da Lista: ${firstStageId}`);
+            } else {
+                // Se não veio stages na lista, tenta buscar o detalhe do funil
+                console.log(`🔄 Buscando detalhes do funil ID ${targetFunnel.id}...`);
+                try {
+                    const detailRes = await axios.get(`https://api.agendor.com.br/v3/funnels/${targetFunnel.id}`, authHeader);
+                    const detailData = detailRes.data.data || detailRes.data;
+
+                    if (detailData.stages && detailData.stages.length > 0) {
+                        firstStageId = detailData.stages[0].id;
+                        console.log(`✅ Stage do Detalhe: ${firstStageId}`);
+                    }
+                } catch (detailErr) {
+                    console.error("⚠️ Erro ao buscar detalhe do funil:", detailErr.message);
+                }
+            }
+
+            if (!firstStageId) {
+                return res.status(400).json({
+                    error: `Funil "${targetFunnel.name}" encontrado mas sem etapas (stages)`,
+                    funil: { id: targetFunnel.id, name: targetFunnel.name }
+                });
+            }
+
+            // C. CRIAR NEGÓCIO
             console.log(`💼 Criando Deal na etapa ${firstStageId}...`);
             await axios.post(
                 `https://api.agendor.com.br/v3/people/${personId}/deals`,
@@ -94,14 +128,13 @@ export default async function handler(req, res) {
                 },
                 authHeader
             );
-            console.log("✅ SUCESSO!");
+            console.log("✅ SUCESSO TOTAL!");
             return res.status(200).json({ success: true });
 
-        } catch (dealErr) {
-            // EXPOE O ERRO FINAL
-            const msg = dealErr.response?.data || dealErr.message;
-            console.error("❌ ERRO DEAL:", JSON.stringify(msg));
-            return res.status(400).json({ error: "Erro ao criar Negócio", details: msg });
+        } catch (err) {
+            const msg = err.response?.data || err.message;
+            console.error("❌ ERRO:", JSON.stringify(msg));
+            return res.status(400).json({ error: "Erro no processo", details: msg });
         }
 
     } catch (fatalError) {
