@@ -71,6 +71,10 @@ export default async function handler(req, res) {
                         console.log("🔎 Buscando Funil 'TERCEIRIZADA'...");
                         const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', authHeader);
 
+                        // Debug: Ajuda a ver o que está vindo
+                        const funnelNames = funnelsRes.data.data.map(f => f.name);
+                        console.log("Nome dos Funis encontrados:", JSON.stringify(funnelNames));
+
                         // Procura o funil pelo nome
                         const targetFunnel = funnelsRes.data.data.find(f =>
                             f.name && f.name.toUpperCase().includes("TERCEIRIZADA")
@@ -104,7 +108,7 @@ export default async function handler(req, res) {
                         dealPayload,
                         authHeader
                     );
-                    console.log("✅ 💼 Negócio Criado no Funil Correto!");
+                    console.log("✅ 💼 Negócio Criado!");
                 }
             }
         } catch (agendorError) {
