@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        console.log("🚀 Processando Lead:", email);
+        console.log("🚀 Processando:", email);
 
         // 1. FACEBOOK CAPI
         try {
@@ -56,64 +56,51 @@ export default async function handler(req, res) {
                 const personId = personResponse.data?.data?.id || personResponse.data?.id;
 
                 if (personId) {
-                    // B. BUSCA DE FUNIL (COM PAGINAÇÃO CORRIGIDA)
+                    // B. BUSCA EXATA DO FUNIL "FUNIL LP TERCEIRIZADA"
                     let targetStageId = null;
 
-                    // Adicionamos limit: 100 para pegar TUDO
                     const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', {
                         ...authHeader,
                         params: { limit: 100, enabled: true }
                     });
 
                     const allFunnels = funnelsRes.data.data || [];
-                    const funnelsNames = allFunnels.map(f => f.name); // Para debug
 
-                    // Busca Insensitive por "TERCEIRIZADA" ou "LPT"
-                    const targetFunnel = allFunnels.find(f => {
-                        const name = (f.name || "").toUpperCase();
-                        return name.includes("TERCEIRIZADA") || name.includes("LPT");
-                    });
+                    // BUSCA EXATA PELO NOME QUE APARECEU NO LOG
+                    const targetFunnel = allFunnels.find(f => f.name === "FUNIL LP TERCEIRIZADA");
 
-                    if (targetFunnel && targetFunnel.stages?.length > 0) {
+                    if (targetFunnel && targetFunnel.stages && targetFunnel.stages.length > 0) {
                         targetStageId = targetFunnel.stages[0].id;
-                        console.log(`✅ Funil ENCONTRADO: ${targetFunnel.name} (Stage: ${targetStageId})`);
+                        console.log(`✅ Funil Correto Encontrado: ${targetFunnel.name}`);
 
-                        // C. CRIAR NEGÓCIO NO FUNIL CERTO
+                        // C. CRIAR NEGÓCIO
                         await axios.post(
                             `https://api.agendor.com.br/v3/people/${personId}/deals`,
                             {
                                 title: `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`,
                                 value: 0,
-                                dealStage: targetStageId, // ID Forçado do funil certo
+                                dealStage: targetStageId,
                                 description: "Lead capturado via Landing Page."
                             },
                             authHeader
                         );
-                        console.log("✅ Negócio criado no funil correto!");
-
+                        console.log("✅ 💼 Negócio criado no Funil LP TERCEIRIZADA!");
                     } else {
-                        // SE NÃO ACHAR, RETORNA ERRO VISÍVEL PRO FRONTEND
-                        // Assim o usuário vê a lista de nomes e me diz qual é o certo
-                        console.error("❌ Funil TERCEIRIZADA não encontrado. Disponíveis:", JSON.stringify(funnelsNames));
-                        return res.status(400).json({
-                            error: "Funil alvo não encontrado",
-                            disponiveis: funnelsNames
-                        });
+                        console.warn("⚠️ Funil exato 'FUNIL LP TERCEIRIZADA' não encontrado. Negócio não criado.");
                     }
                 }
             }
         } catch (agendorError) {
-            const msg = agendorError.response?.data || agendorError.message;
-            console.error("⚠️ Erro CRM:", JSON.stringify(msg));
-            // Se der erro no CRM, retorna sucesso pro usuário não ficar travado,
-            // a menos que seja o erro 400 que forçamos acima.
-            if (res.headersSent) return;
+            // Loga o erro, mas NÃO trava o site. O usuário recebe sucesso.
+            console.error("⚠️ Erro CRM (Silencioso):", agendorError.response?.data || agendorError.message);
         }
 
+        // Retorna sempre sucesso para o frontend
         return res.status(200).json({ success: true });
 
     } catch (fatalError) {
         console.error("🔥 Erro Fatal:", fatalError);
+        // Mesmo erro fatal tentamos não mostrar pro usuário final se possível, mas aqui é 500
         return res.status(500).json({ error: "Erro interno" });
     }
 }
