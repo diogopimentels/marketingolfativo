@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
+import crypto from 'crypto';
 
 console.log('Starting server...');
 
@@ -90,6 +91,56 @@ app.post('/api/lead', async (req, res) => {
             error: 'Erro ao processar solicitação.',
             details: error.response?.data || error.message
         });
+    }
+});
+
+app.post('/api/facebook-conversion', async (req, res) => {
+    try {
+        const { email, eventId, userAgent } = req.body;
+        const pixelId = process.env.FB_PIXEL_ID;
+        const accessToken = process.env.FB_ACCESS_TOKEN;
+
+        if (!pixelId || !accessToken) {
+            console.error('FB_PIXEL_ID ou FB_ACCESS_TOKEN não configurados.');
+            return res.status(500).json({ error: 'Configuração de servidor ausente.' });
+        }
+
+        // Hash email (SHA256)
+        const hashEmail = (email) => {
+            if (!email) return null;
+            return crypto.createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
+        };
+
+        const eventTime = Math.floor(Date.now() / 1000);
+        const hashedEmail = hashEmail(email);
+
+        const payload = {
+            data: [
+                {
+                    event_name: 'Lead',
+                    event_time: eventTime,
+                    event_id: eventId,
+                    action_source: 'website',
+                    user_data: {
+                        em: [hashedEmail],
+                        client_user_agent: userAgent,
+                        client_ip_address: req.ip
+                    }
+                }
+            ]
+        };
+
+        await axios.post(
+            `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+            payload
+        );
+
+        console.log('Evento CAPI enviado com sucesso.');
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error('Erro ao enviar evento CAPI:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Falha ao enviar evento.' });
     }
 });
 

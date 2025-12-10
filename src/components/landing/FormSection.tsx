@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Send, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { submitToAgendor } from "@/services/agendor";
+import { v4 as uuidv4 } from 'uuid';
+import ReactPixel from 'react-facebook-pixel';
+import axios from 'axios';
+
 
 export const FormSection = () => {
   const ref = useRef(null);
@@ -39,11 +43,31 @@ export const FormSection = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const eventId = uuidv4();
+    const userAgent = navigator.userAgent;
+
+    // Browser Tracking (Pixel)
+    // @ts-ignore
+    ReactPixel.track('Lead', {}, { eventID: eventId });
+
+
     try {
       await submitToAgendor({
         ...formData,
         temMarca: formData.temMarca
       });
+
+      // Server-Side Tracking (CAPI) via Backend
+      try {
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/facebook-conversion`, {
+          email: formData.email,
+          eventId,
+          userAgent
+        });
+        console.log("CAPI event sent");
+      } catch (capiError) {
+        console.error("Failed to send CAPI event", capiError);
+      }
 
       toast({
         title: "Sucesso!",

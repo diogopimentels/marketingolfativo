@@ -50,15 +50,50 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
+## 🛠️ Tecnologias Utilizadas
 
-This project is built with:
+Este projeto foi construído utilizando uma stack moderna e robusta para garantir performance, escalabilidade e uma excelente experiência de desenvolvedor.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### **Frontend** (Client)
+A interface do usuário é construída com **React** e **Vite**, focando em performance e interatividade.
+
+*   **Core:**
+    *   [React](https://react.dev/) - Biblioteca para construção de interfaces.
+    *   [TypeScript](https://www.typescriptlang.org/) - Superset tipado de JavaScript.
+    *   [Vite](https://vitejs.dev/) - Build tool e dev server ultra-rápido.
+
+*   **UI & Estilização:**
+    *   [Tailwind CSS](https://tailwindcss.com/) - Framework CSS utility-first.
+    *   [Shadcn/ui](https://ui.shadcn.com/) - Coleção de componentes reutilizáveis baseados em Radix UI.
+    *   [Radix UI](https://www.radix-ui.com/) - Primitivos de UI acessíveis e sem estilo.
+    *   [Framer Motion](https://www.framer.com/motion/) - Biblioteca de animações produção-ready.
+    *   [Lucide React](https://lucide.dev/) - Biblioteca de ícones leve e consistente.
+
+*   **Gerenciamento de Estado & Dados:**
+    *   [TanStack Query (React Query)](https://tanstack.com/query/latest) - Gerenciamento de estado assíncrono e data fetching.
+    *   [React Hook Form](https://react-hook-form.com/) - Gerenciamento de formulários performático.
+    *   [Zod](https://zod.dev/) - Validação de schemas TypeScript-first (usado em conjunto com React Hook Form).
+
+*   **Roteamento:**
+    *   [React Router](https://reactrouter.com/) - Roteamento declarativo para aplicações React.
+
+*   **Outras Bibliotecas Importantes:**
+    *   **Sonner**: Componente de toast notifications.
+    *   **Recharts**: Biblioteca de gráficos composável.
+    *   **Vaul**: Componente de drawer (gaveta) para React.
+    *   **Input OTP**: Componente para inputs de One Time Password.
+
+### **Backend** (Server)
+O servidor é uma API leve construída com **Node.js**, responsável por orquestrar integrações e lógica de negócio.
+
+*   **Core:**
+    *   [Node.js](https://nodejs.org/) - Runtime JavaScript.
+    *   [Express](https://expressjs.com/) - Framework web minimalista para Node.js.
+
+*   **Utilitários:**
+    *   **Axios**: Cliente HTTP baseado em Promises para navegador e Node.js.
+    *   **Cors**: Middleware para habilitar CORS (Cross-Origin Resource Sharing).
+    *   **Dotenv**: Carregamento de variáveis de ambiente do arquivo `.env`.
 
 ## How can I deploy this project?
 

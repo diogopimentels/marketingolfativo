@@ -22,16 +22,33 @@ export const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    const targetId = href.replace("#", "");
+    const element = document.getElementById(targetId);
+    if (element) {
+      // Add offset for fixed header if needed, or just scrollIntoView
+      const headerOffset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
+
   return (
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
           ? "bg-background/90 backdrop-blur-xl shadow-sm border-b border-border/50"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <nav className="container-premium">
         <div className="flex items-center justify-between h-20 md:h-24">
@@ -46,6 +63,7 @@ export const Navbar = () => {
               <a
                 key={link.label}
                 href={link.href}
+                onClick={(e) => handleScroll(e, link.href)}
                 className="text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm font-medium tracking-wide"
               >
                 {link.label}
@@ -86,7 +104,7 @@ export const Navbar = () => {
                 <a
                   key={link.label}
                   href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={(e) => handleScroll(e, link.href)}
                   className="text-foreground hover:text-primary transition-colors duration-300 text-lg font-medium py-2"
                 >
                   {link.label}
