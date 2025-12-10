@@ -57,8 +57,8 @@ export default async function handler(req, res) {
 
         if (!personId) return res.status(500).json({ error: "ID Pessoa não retornado" });
 
-        // B. BUSCA FUNIL POR NOME (LISTA COMPLETA)
-        console.log("🔎 Listando TODOS os funis disponíveis...");
+        // B. BUSCA FUNIL POR NOME
+        console.log("🔎 Listando funis...");
 
         try {
             const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', {
@@ -68,10 +68,6 @@ export default async function handler(req, res) {
 
             const allFunnels = funnelsRes.data.data || [];
 
-            // LOG CRÍTICO: Mostra TODOS os funis com ID e nome
-            const funnelList = allFunnels.map(f => ({ id: f.id, name: f.name }));
-            console.log("� FUNIS DISPONÍVEIS:", JSON.stringify(funnelList, null, 2));
-
             // Procura pelo nome que contém "LP" e "TERCEIRIZADA"
             const targetFunnel = allFunnels.find(f => {
                 const name = (f.name || "").toUpperCase();
@@ -79,45 +75,32 @@ export default async function handler(req, res) {
             });
 
             if (!targetFunnel) {
-                // SE NÃO ACHAR, RETORNA ERRO COM A LISTA COMPLETA
+                const funnelList = allFunnels.map(f => ({ id: f.id, name: f.name }));
                 return res.status(400).json({
                     error: "Funil 'LP TERCEIRIZADA' não encontrado",
                     funis_disponiveis: funnelList
                 });
             }
 
-            // Tenta pegar as stages do objeto da lista primeiro
-            let firstStageId = null;
+            // C. BUSCA STAGES DO FUNIL (ENDPOINT ESPECÍFICO)
+            console.log(`🎯 Buscando stages do funil ${targetFunnel.id}...`);
+            const stagesRes = await axios.get(`https://api.agendor.com.br/v3/funnels/${targetFunnel.id}/stages`, authHeader);
 
-            if (targetFunnel.stages && targetFunnel.stages.length > 0) {
-                // Se a lista já trouxe as stages, usa direto
-                firstStageId = targetFunnel.stages[0].id;
-                console.log(`✅ Funil "${targetFunnel.name}" (ID: ${targetFunnel.id}) - Stage da Lista: ${firstStageId}`);
-            } else {
-                // Se não veio stages na lista, tenta buscar o detalhe do funil
-                console.log(`🔄 Buscando detalhes do funil ID ${targetFunnel.id}...`);
-                try {
-                    const detailRes = await axios.get(`https://api.agendor.com.br/v3/funnels/${targetFunnel.id}`, authHeader);
-                    const detailData = detailRes.data.data || detailRes.data;
+            const stages = stagesRes.data.data || stagesRes.data || [];
+            console.log(`📊 Stages encontradas:`, JSON.stringify(stages));
 
-                    if (detailData.stages && detailData.stages.length > 0) {
-                        firstStageId = detailData.stages[0].id;
-                        console.log(`✅ Stage do Detalhe: ${firstStageId}`);
-                    }
-                } catch (detailErr) {
-                    console.error("⚠️ Erro ao buscar detalhe do funil:", detailErr.message);
-                }
-            }
-
-            if (!firstStageId) {
+            if (stages.length === 0) {
                 return res.status(400).json({
-                    error: `Funil "${targetFunnel.name}" encontrado mas sem etapas (stages)`,
+                    error: `Funil "${targetFunnel.name}" não possui etapas cadastradas`,
                     funil: { id: targetFunnel.id, name: targetFunnel.name }
                 });
             }
 
-            // C. CRIAR NEGÓCIO
-            console.log(`💼 Criando Deal na etapa ${firstStageId}...`);
+            const firstStageId = stages[0].id;
+            console.log(`✅ Usando stage ID: ${firstStageId}`);
+
+            // D. CRIAR NEGÓCIO
+            console.log(`💼 Criando Deal...`);
             await axios.post(
                 `https://api.agendor.com.br/v3/people/${personId}/deals`,
                 {
