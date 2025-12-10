@@ -12,18 +12,6 @@ import ReactPixel from "react-facebook-pixel";
 const queryClient = new QueryClient();
 
 const App = () => {
-  useEffect(() => {
-    // COLOQUE O ID DIRETO AQUI (Hardcode)
-    // Isso elimina qualquer dúvida se a variável está funcionando ou não
-    const pixelId = '695180576776458'; 
-    
-    ReactPixel.init(pixelId);
-    ReactPixel.pageView();
-    
-    // Log para você ver no console do navegador (F12) se funcionou
-    console.log("Pixel iniciado manualmente com ID:", pixelId);
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
