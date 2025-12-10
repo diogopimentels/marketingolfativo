@@ -3,11 +3,11 @@ import crypto from 'crypto';
 
 function cleanPhone(phone) {
     if (!phone) return null;
-    return phone.replace(/\D/g, ''); // Remove tudo que não é número
+    return phone.replace(/\D/g, '');
 }
 
 export default async function handler(req, res) {
-    // CORS Setup
+    // Configuração CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        console.log("🚀 Lead Recebido:", email);
+        console.log("🚀 Processando:", email);
 
         // 1. FACEBOOK CAPI
         try {
@@ -40,44 +40,65 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error('Erro Face:', e.message); }
 
-        // 2. AGENDOR CRM (BLINDADO - NÃO TRAVA O SITE)
+        // 2. AGENDOR CRM (FLUXO DUPLO: PESSOA -> NEGÓCIO)
         try {
             const rawToken = process.env.AGENDOR_TOKEN || "";
             const cleanToken = rawToken.replace(/['"]+/g, '').trim();
             const phoneClean = cleanPhone(telefone);
 
             if (cleanToken) {
-                await axios.post(
-                    'https://api.agendor.com.br/v3/people/upsert',
-                    {
+                // PASSO A: Criar/Atualizar Pessoa
+                const personPayload = {
+                    email: email,
+                    name: nomeCompleto,
+                    contact: {
                         email: email,
-                        name: nomeCompleto,
-                        contact: {
-                            email: email,
-                            mobile: phoneClean, // Voltando para 'mobile' que é mais aceito
-                            work: phoneClean
-                        },
-                        role: nomeMarca,
-                        description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
+                        mobile: phoneClean, // Campo 'mobile' (V3 legacy) costuma ser mais seguro, ou 'mobile_phone'
+                        work: phoneClean
                     },
-                    {
-                        headers: { 'Authorization': `Token ${cleanToken}`, 'Content-Type': 'application/json' }
-                    }
+                    role: nomeMarca,
+                    description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
+                };
+
+                console.log("👤 Criando Pessoa...");
+                const personResponse = await axios.post(
+                    'https://api.agendor.com.br/v3/people/upsert',
+                    personPayload,
+                    { headers: { 'Authorization': `Token ${cleanToken}` } }
                 );
-                console.log("✅ Agendor Salvo!");
+
+                // PASSO B: Criar Negócio (Se conseguiu o ID da pessoa)
+                // O Agendor retorna os dados dentro de data.data.id
+                const personId = personResponse.data?.data?.id;
+
+                if (personId) {
+                    console.log(`💼 Criando Negócio para ID: ${personId}`);
+
+                    const dealTitle = `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`;
+
+                    await axios.post(
+                        `https://api.agendor.com.br/v3/people/${personId}/deals`,
+                        {
+                            title: dealTitle,
+                            dealStage: 1, // 1 = Primeira etapa do funil (padrão)
+                            value: 0
+                        },
+                        { headers: { 'Authorization': `Token ${cleanToken}` } }
+                    );
+                    console.log("✅ Negócio Criado com Sucesso!");
+                } else {
+                    console.warn("⚠️ Pessoa criada, mas ID não retornado. Negócio não criado.");
+                }
             }
         } catch (agendorError) {
-            // O PULO DO GATO: Logamos o erro mas NÃO retornamos erro pro site
-            console.error("⚠️ Agendor falhou mas o baile segue:", agendorError.response?.data || agendorError.message);
+            // Logamos o erro mas não travamos o site
+            console.error("⚠️ Erro CRM:", agendorError.response?.data || agendorError.message);
         }
 
-        // 3. RETORNO DE SUCESSO (SEMPRE)
-        // O usuário consegue baixar o ebook independente do que acontecer no CRM
         return res.status(200).json({ success: true, message: "Lead processado" });
 
     } catch (fatalError) {
         console.error("🔥 Erro Fatal:", fatalError);
-        // Erro 500 só se o código quebrar muito feio (o que é difícil aqui)
         return res.status(500).json({ error: "Erro interno" });
     }
 }
