@@ -7,7 +7,6 @@ function cleanPhone(phone) {
 }
 
 export default async function handler(req, res) {
-    // Configuração CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -27,15 +26,7 @@ export default async function handler(req, res) {
                 const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
                 await axios.post(
                     `https://graph.facebook.com/v18.0/${process.env.FB_PIXEL_ID}/events?access_token=${process.env.FB_ACCESS_TOKEN}`,
-                    {
-                        data: [{
-                            event_name: 'Lead',
-                            event_time: Math.floor(Date.now() / 1000),
-                            event_id: eventId,
-                            user_data: { em: [emailHash], client_user_agent: userAgent, client_ip_address: req.headers['x-forwarded-for'] || '0.0.0.0' },
-                            action_source: 'website',
-                        }]
-                    }
+                    { data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: eventId, user_data: { em: [emailHash], client_user_agent: userAgent, client_ip_address: req.headers['x-forwarded-for'] || '0.0.0.0' }, action_source: 'website' }] }
                 );
             }
         } catch (e) { console.error('Erro Face:', e.message); }
@@ -50,7 +41,6 @@ export default async function handler(req, res) {
                 const authHeader = { headers: { 'Authorization': `Token ${cleanToken}` } };
 
                 // A. UPSERT PESSOA
-                console.log("👤 Processando Pessoa...");
                 const personResponse = await axios.post(
                     'https://api.agendor.com.br/v3/people/upsert',
                     {
@@ -66,52 +56,58 @@ export default async function handler(req, res) {
                 const personId = personResponse.data?.data?.id || personResponse.data?.id;
 
                 if (personId) {
-                    // B. BUSCA EXATA DE FUNIL
+                    // B. BUSCA DE FUNIL (COM PAGINAÇÃO CORRIGIDA)
                     let targetStageId = null;
-                    try {
-                        const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', authHeader);
 
-                        // Log para conferência
-                        const availableFunnels = funnelsRes.data.data.map(f => f.name);
-                        console.log("📋 Funis Encontrados:", JSON.stringify(availableFunnels));
+                    // Adicionamos limit: 100 para pegar TUDO
+                    const funnelsRes = await axios.get('https://api.agendor.com.br/v3/funnels', {
+                        ...authHeader,
+                        params: { limit: 100, enabled: true }
+                    });
 
-                        // Busca pelo nome exato "FUNIL LP TERCEIRIZADA" (ignorando maiúsculas/minúsculas)
-                        const targetFunnel = funnelsRes.data.data.find(f => {
-                            const name = (f.name || "").trim().toUpperCase();
-                            return name === "FUNIL LP TERCEIRIZADA" || name.includes("TERCEIRIZADA");
+                    const allFunnels = funnelsRes.data.data || [];
+                    const funnelsNames = allFunnels.map(f => f.name); // Para debug
+
+                    // Busca Insensitive por "TERCEIRIZADA" ou "LPT"
+                    const targetFunnel = allFunnels.find(f => {
+                        const name = (f.name || "").toUpperCase();
+                        return name.includes("TERCEIRIZADA") || name.includes("LPT");
+                    });
+
+                    if (targetFunnel && targetFunnel.stages?.length > 0) {
+                        targetStageId = targetFunnel.stages[0].id;
+                        console.log(`✅ Funil ENCONTRADO: ${targetFunnel.name} (Stage: ${targetStageId})`);
+
+                        // C. CRIAR NEGÓCIO NO FUNIL CERTO
+                        await axios.post(
+                            `https://api.agendor.com.br/v3/people/${personId}/deals`,
+                            {
+                                title: `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`,
+                                value: 0,
+                                dealStage: targetStageId, // ID Forçado do funil certo
+                                description: "Lead capturado via Landing Page."
+                            },
+                            authHeader
+                        );
+                        console.log("✅ Negócio criado no funil correto!");
+
+                    } else {
+                        // SE NÃO ACHAR, RETORNA ERRO VISÍVEL PRO FRONTEND
+                        // Assim o usuário vê a lista de nomes e me diz qual é o certo
+                        console.error("❌ Funil TERCEIRIZADA não encontrado. Disponíveis:", JSON.stringify(funnelsNames));
+                        return res.status(400).json({
+                            error: "Funil alvo não encontrado",
+                            disponiveis: funnelsNames
                         });
-
-                        if (targetFunnel && targetFunnel.stages && targetFunnel.stages.length > 0) {
-                            targetStageId = targetFunnel.stages[0].id;
-                            console.log(`✅ Funil ALVO "${targetFunnel.name}" encontrado! ID Etapa: ${targetStageId}`);
-                        } else {
-                            console.warn("⚠️ Funil 'FUNIL LP TERCEIRIZADA' não encontrado. Verifique o nome exato no log acima.");
-                        }
-                    } catch (funnelError) {
-                        console.error("Erro busca funil:", funnelError.message);
                     }
-
-                    // C. CRIAR NEGÓCIO
-                    const dealPayload = {
-                        title: `${nomeCompleto} | ${nomeMarca} | BAIXOU O EBOOK!`,
-                        value: 0,
-                        description: "Lead capturado via Landing Page."
-                    };
-
-                    if (targetStageId) {
-                        dealPayload.dealStage = targetStageId;
-                    }
-
-                    await axios.post(
-                        `https://api.agendor.com.br/v3/people/${personId}/deals`,
-                        dealPayload,
-                        authHeader
-                    );
-                    console.log("✅ 💼 Negócio Criado!");
                 }
             }
         } catch (agendorError) {
-            console.error("⚠️ Erro CRM:", agendorError.response?.data || agendorError.message);
+            const msg = agendorError.response?.data || agendorError.message;
+            console.error("⚠️ Erro CRM:", JSON.stringify(msg));
+            // Se der erro no CRM, retorna sucesso pro usuário não ficar travado,
+            // a menos que seja o erro 400 que forçamos acima.
+            if (res.headersSent) return;
         }
 
         return res.status(200).json({ success: true });
