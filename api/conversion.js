@@ -1,10 +1,9 @@
 import axios from 'axios';
 import crypto from 'crypto';
 
-// Função para limpar telefone (Agendor odeia formatação)
 function cleanPhone(phone) {
-    if (!phone) return "";
-    return phone.replace(/\D/g, ''); // Remove ( ) - e espaços
+    if (!phone) return null;
+    return phone.replace(/\D/g, ''); // Remove tudo que não é número
 }
 
 export default async function handler(req, res) {
@@ -20,9 +19,9 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        console.log("🚀 Recebido:", email);
+        console.log("🚀 Lead Recebido:", email);
 
-        // 1. FACEBOOK (Mantemos o try/catch aqui pq o Face não é o foco do erro agora)
+        // 1. FACEBOOK CAPI
         try {
             if (process.env.FB_PIXEL_ID && process.env.FB_ACCESS_TOKEN) {
                 const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
@@ -41,61 +40,44 @@ export default async function handler(req, res) {
             }
         } catch (e) { console.error('Erro Face:', e.message); }
 
-        // 2. AGENDOR CRM (SEM TRY/CATCH SILENCIOSO)
-        // Se der erro aqui, VAI dar erro no frontend e mostrar o motivo.
-        const rawToken = process.env.AGENDOR_TOKEN || "";
-        const cleanToken = rawToken.replace(/['"]+/g, '').trim();
-
-        if (!cleanToken) {
-            throw new Error("Token do Agendor não configurado na Vercel");
-        }
-
-        const phoneClean = cleanPhone(telefone);
-
-        // Payload oficial V3 Agendor
-        const agendorPayload = {
-            email: email, // Identificador único
-            name: nomeCompleto,
-            contact: {
-                email: email,
-                mobile_phone: phoneClean, // V3 pede mobile_phone
-                work_phone: phoneClean
-            },
-            // Usamos 'role' (Cargo) para a marca, pois criar Organization exige outro endpoint
-            role: nomeMarca,
-            description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'}`
-        };
-
-        console.log("📤 Enviando pro Agendor:", JSON.stringify(agendorPayload));
-
+        // 2. AGENDOR CRM (BLINDADO - NÃO TRAVA O SITE)
         try {
-            const response = await axios.post(
-                'https://api.agendor.com.br/v3/people/upsert',
-                agendorPayload,
-                {
-                    headers: {
-                        'Authorization': `Token ${cleanToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-            console.log("✅ Agendor Sucesso:", response.status);
-        } catch (agendorError) {
-            // CAPTURA O ERRO REAL DO AGENDOR
-            const errorResponse = agendorError.response?.data;
-            console.error("❌ ERRO FATAL AGENDOR:", JSON.stringify(errorResponse));
+            const rawToken = process.env.AGENDOR_TOKEN || "";
+            const cleanToken = rawToken.replace(/['"]+/g, '').trim();
+            const phoneClean = cleanPhone(telefone);
 
-            // DEVOLVE O ERRO PRO FRONTEND (Não engole mais!)
-            return res.status(400).json({
-                error: "Agendor Recusou",
-                details: errorResponse || agendorError.message
-            });
+            if (cleanToken) {
+                await axios.post(
+                    'https://api.agendor.com.br/v3/people/upsert',
+                    {
+                        email: email,
+                        name: nomeCompleto,
+                        contact: {
+                            email: email,
+                            mobile: phoneClean, // Voltando para 'mobile' que é mais aceito
+                            work: phoneClean
+                        },
+                        role: nomeMarca,
+                        description: `Segmento: ${temMarca} | News: ${newsletter ? 'Sim' : 'Não'} | Origem: LP`
+                    },
+                    {
+                        headers: { 'Authorization': `Token ${cleanToken}`, 'Content-Type': 'application/json' }
+                    }
+                );
+                console.log("✅ Agendor Salvo!");
+            }
+        } catch (agendorError) {
+            // O PULO DO GATO: Logamos o erro mas NÃO retornamos erro pro site
+            console.error("⚠️ Agendor falhou mas o baile segue:", agendorError.response?.data || agendorError.message);
         }
 
-        return res.status(200).json({ success: true });
+        // 3. RETORNO DE SUCESSO (SEMPRE)
+        // O usuário consegue baixar o ebook independente do que acontecer no CRM
+        return res.status(200).json({ success: true, message: "Lead processado" });
 
     } catch (fatalError) {
-        console.error("🔥 Erro Servidor:", fatalError);
-        return res.status(500).json({ error: fatalError.message });
+        console.error("🔥 Erro Fatal:", fatalError);
+        // Erro 500 só se o código quebrar muito feio (o que é difícil aqui)
+        return res.status(500).json({ error: "Erro interno" });
     }
 }

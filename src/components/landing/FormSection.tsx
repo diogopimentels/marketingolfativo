@@ -32,10 +32,25 @@ export const FormSection = () => {
 
   const ebookUrl = "https://drive.google.com/uc?export=download&id=1NoFqm9FwG9gEGVLnoC4K7Egc0J8DAyda";
 
+  const phoneMask = (value: string) => {
+    return value
+      .replace(/\D/g, '') // Remove tudo que não é dígito
+      .replace(/^(\d{2})(\d)/g, '($1) $2') // Coloca parênteses no DDD
+      .replace(/(\d)(\d{4})$/, '$1-$2'); // Coloca hífen
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
-    const name = (e.target as HTMLInputElement).name;
+    // @ts-ignore
+    const checked = e.target.checked;
+    // @ts-ignore
+    const name = e.target.name;
+
+    if (id === 'telefone') {
+      const maskedValue = phoneMask(value);
+      setFormData(prev => ({ ...prev, [id]: maskedValue }));
+      return;
+    }
 
     if (type === 'radio') {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -169,6 +184,7 @@ export const FormSection = () => {
                 placeholder="Digite seu número de telefone"
                 required
                 disabled={isSuccess}
+                maxLength={15}
               />
             </div>
 
