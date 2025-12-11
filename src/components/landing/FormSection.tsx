@@ -79,17 +79,20 @@ export const FormSection = () => {
     }
 
     try {
-      // 3. Server-Side Centralizado Vercel (CAPI + Agendor)
-      // Caminho relativo funciona perfeitamente na Vercel
+      // 3. Server-Side Centralizado Vercel (CAPI + Google Sheets)
+      // CAMINHO RELATIVO (Vercel entende automaticamente)
       await axios.post('/api/conversion', {
         email: formData.email,
         eventId: eventId,
-        userAgent: navigator.userAgent,
-        // Envie todos os dados do form para o backend processar o CRM
-        ...formData
+        userAgent: userAgent,
+        nomeCompleto: formData.nomeCompleto,
+        telefone: formData.telefone,
+        nomeMarca: formData.nomeMarca,
+        temMarca: formData.temMarca,
+        newsletter: formData.newsletter
       });
 
-      console.log("✅ Conversão enviada com sucesso!");
+      console.log("✅ Dados enviados para o Backend Vercel!");
 
       // 4. Sucesso e Download
       toast({
@@ -103,12 +106,14 @@ export const FormSection = () => {
       window.location.href = ebookUrl;
 
     } catch (error) {
-      console.error("❌ Erro ao enviar:", error);
+      console.error("Erro no envio:", error);
       toast({
-        title: "Erro",
-        description: "Houve um problema ao enviar seus dados. Tente novamente.",
-        variant: "destructive"
+        title: "Atenção",
+        description: "Houve uma instabilidade, mas seu download vai começar!",
       });
+      // Mesmo com erro, deixa baixar (Fail-safe)
+      setIsSuccess(true);
+      window.location.href = ebookUrl;
     } finally {
       setIsSubmitting(false);
     }
