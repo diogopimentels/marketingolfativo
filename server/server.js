@@ -24,7 +24,7 @@ app.use(cors({
 }));
 
 app.use((req, res, next) => {
-    console.log(`📨 Request recebido: [${req.method}] ${req.url} | IP: ${req.ip}`);
+    console.log(`📨 Request recebido: [${req.method}] ${req.url}`);
     next();
 });
 app.use(express.json());
@@ -34,31 +34,27 @@ app.post('/api/conversion', async (req, res) => {
     console.log('Received request on /api/conversion');
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
+        console.log("🚀 NOVO LEAD:", email);
 
         // 1. FACEBOOK CAPI
-        try {
-            const pixelId = process.env.FB_PIXEL_ID;
-            const accessToken = process.env.FB_ACCESS_TOKEN;
+        const pixelId = process.env.FB_PIXEL_ID;
+        const accessToken = process.env.FB_ACCESS_TOKEN;
 
-            if (pixelId && accessToken) {
-                const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
-                // Não await pra não travar localmente se der timeout
-                axios.post(
-                    `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
-                    { data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: eventId, user_data: { em: [emailHash], client_user_agent: userAgent, client_ip_address: req.ip || '0.0.0.0' }, action_source: 'website' }] }
-                ).catch(e => console.error("Erro FB Local:", e.message));
-                console.log("✅ Facebook OK");
-            }
-        } catch (e) {
-            console.error('Face ignorado:', e.message);
+        if (pixelId && accessToken) {
+            const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
+            // Não await pra não travar localmente
+            axios.post(
+                `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+                { data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: eventId, user_data: { em: [emailHash], client_user_agent: userAgent, client_ip_address: req.ip || '0.0.0.0' }, action_source: 'website' }] }
+            ).catch(e => console.error("Erro FB Local:", e.message));
         }
 
-        // 2. GOOGLE SHEETS (VIA GET/PARAMS)
-        try {
-            const sheetUrl = process.env.SHEET_WEBHOOK_URL;
+        // 2. GOOGLE SHEETS (VIA GET)
+        const sheetUrl = process.env.SHEET_WEBHOOK_URL;
 
-            if (sheetUrl) {
-                console.log("Enviando para planilha (GET):", sheetUrl);
+        if (sheetUrl) {
+            console.log("📤 Enviando para Planilha (GET)...");
+            try {
                 await axios.get(sheetUrl, {
                     params: {
                         email,
@@ -69,12 +65,12 @@ app.post('/api/conversion', async (req, res) => {
                         newsletter: newsletter ? "Sim" : "Não"
                     }
                 });
-                console.log("✅ Salvo na Planilha!");
-            } else {
-                console.warn("⚠️ SHEET_WEBHOOK_URL não definida no .env do servidor");
+                console.log("✅ Planilha Sucesso!");
+            } catch (sheetError) {
+                console.error("❌ Erro Planilha:", sheetError.message);
             }
-        } catch (sheetError) {
-            console.error("❌ Erro Planilha:", sheetError.message);
+        } else {
+            console.warn("⚠️ SHEET_WEBHOOK_URL não definida no .env do servidor local");
         }
 
         return res.status(200).json({ success: true });
@@ -84,10 +80,6 @@ app.post('/api/conversion', async (req, res) => {
         return res.status(500).json({ error: "Erro interno no servidor local" });
     }
 });
-
-// Mantemos as rotas legadas por compatibilidade
-app.post('/api/agendor', (req, res) => res.status(410).json({ error: "Use /api/conversion" }));
-app.post('/api/facebook-conversion', (req, res) => res.status(410).json({ error: "Use /api/conversion" }));
 
 if (process.argv[1] === __filename) {
     app.listen(PORT, '0.0.0.0', () => {
