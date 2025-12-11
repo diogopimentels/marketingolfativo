@@ -2,7 +2,7 @@ import axios from 'axios';
 import crypto from 'crypto';
 
 export default async function handler(req, res) {
-    // CORS Padrão
+    // CORS Setup
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
@@ -14,44 +14,43 @@ export default async function handler(req, res) {
     try {
         const { email, eventId, userAgent, nomeCompleto, telefone, nomeMarca, temMarca, newsletter } = req.body;
 
-        console.log("🚀 Lead Novo:", email);
+        console.log("🚀 Novo Lead:", email);
 
-        // 1. FACEBOOK CAPI (Prioridade 1)
+        // 1. FACEBOOK CAPI
         try {
             if (process.env.FB_PIXEL_ID && process.env.FB_ACCESS_TOKEN) {
                 const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
-                await axios.post(
+                // O Facebook não precisa de await crítico, deixamos rodar
+                axios.post(
                     `https://graph.facebook.com/v18.0/${process.env.FB_PIXEL_ID}/events?access_token=${process.env.FB_ACCESS_TOKEN}`,
                     { data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: eventId, user_data: { em: [emailHash], client_user_agent: userAgent, client_ip_address: req.headers['x-forwarded-for'] || '0.0.0.0' }, action_source: 'website' }] }
-                );
-                console.log("✅ Facebook OK");
+                ).catch(e => console.error('Face erro:', e.message));
             }
-        } catch (e) { console.error('Face ignorado:', e.message); }
+        } catch (e) { }
 
-        // 2. GOOGLE SHEETS (O "CSV" Automático)
+        // 2. GOOGLE SHEETS (VIA GET/PARAMS - INFALÍVEL)
         try {
-            // URL do Script do Google que o usuário vai colocar na Vercel
             const sheetUrl = process.env.SHEET_WEBHOOK_URL;
 
             if (sheetUrl) {
-                await axios.post(sheetUrl, {
-                    email,
-                    nomeCompleto,
-                    telefone,
-                    nomeMarca,
-                    temMarca,
-                    newsletter
+                // Axios GET envia os dados na URL, sobrevivendo ao redirect do Google
+                await axios.get(sheetUrl, {
+                    params: {
+                        email: email,
+                        nomeCompleto: nomeCompleto,
+                        telefone: telefone,
+                        nomeMarca: nomeMarca,
+                        temMarca: temMarca,
+                        newsletter: newsletter ? "Sim" : "Não"
+                    }
                 });
-                console.log("✅ Salvo na Planilha!");
-            } else {
-                console.warn("⚠️ URL da Planilha não configurada (SHEET_WEBHOOK_URL)");
+                console.log("✅ Planilha Atualizada!");
             }
         } catch (sheetError) {
             console.error("❌ Erro Planilha:", sheetError.message);
-            // Não trava o site, só loga
         }
 
-        // Sucesso garantido pro usuário
+        // Retorna sucesso para o usuário baixar o ebook
         return res.status(200).json({ success: true });
 
     } catch (fatalError) {

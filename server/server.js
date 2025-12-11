@@ -29,7 +29,7 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
-// ROTA ÚNICA UNIFICADA (Idêntica à Vercel Function)
+// ROTA ÚNICA UNIFICADA
 app.post('/api/conversion', async (req, res) => {
     console.log('Received request on /api/conversion');
     try {
@@ -42,29 +42,32 @@ app.post('/api/conversion', async (req, res) => {
 
             if (pixelId && accessToken) {
                 const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
-                await axios.post(
+                // Não await pra não travar localmente se der timeout
+                axios.post(
                     `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
                     { data: [{ event_name: 'Lead', event_time: Math.floor(Date.now() / 1000), event_id: eventId, user_data: { em: [emailHash], client_user_agent: userAgent, client_ip_address: req.ip || '0.0.0.0' }, action_source: 'website' }] }
-                );
+                ).catch(e => console.error("Erro FB Local:", e.message));
                 console.log("✅ Facebook OK");
             }
         } catch (e) {
             console.error('Face ignorado:', e.message);
         }
 
-        // 2. GOOGLE SHEETS (WEBHOOK)
+        // 2. GOOGLE SHEETS (VIA GET/PARAMS)
         try {
             const sheetUrl = process.env.SHEET_WEBHOOK_URL;
 
             if (sheetUrl) {
-                console.log("Enviando para planilha:", sheetUrl);
-                await axios.post(sheetUrl, {
-                    email,
-                    nomeCompleto,
-                    telefone,
-                    nomeMarca,
-                    temMarca,
-                    newsletter
+                console.log("Enviando para planilha (GET):", sheetUrl);
+                await axios.get(sheetUrl, {
+                    params: {
+                        email,
+                        nomeCompleto,
+                        telefone,
+                        nomeMarca,
+                        temMarca,
+                        newsletter: newsletter ? "Sim" : "Não"
+                    }
                 });
                 console.log("✅ Salvo na Planilha!");
             } else {
@@ -82,7 +85,7 @@ app.post('/api/conversion', async (req, res) => {
     }
 });
 
-// Mantemos as rotas legadas por compatibilidade, se necessário, mas a principal agora é a de cima
+// Mantemos as rotas legadas por compatibilidade
 app.post('/api/agendor', (req, res) => res.status(410).json({ error: "Use /api/conversion" }));
 app.post('/api/facebook-conversion', (req, res) => res.status(410).json({ error: "Use /api/conversion" }));
 
