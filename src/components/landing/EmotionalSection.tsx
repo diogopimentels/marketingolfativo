@@ -17,19 +17,22 @@ export const EmotionalSection = () => {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="max-w-4xl mx-auto text-center"
         >
-          <Quote className="w-16 h-16 text-primary/20 mx-auto mb-8" />
-          
-          <blockquote className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground leading-snug mb-10">
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-          </blockquote>
+          <div className="space-y-6">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground leading-snug">
+              Você investe em coleção, loja, visual, atendimento.
+              <br />
+              <span className="text-muted-foreground">Mas, no fim, muitas clientes ainda escolhem pela etiqueta.</span>
+            </h2>
 
-          <div className="flex items-center justify-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="font-display text-xl font-bold text-primary">JD</span>
-            </div>
-            <div className="text-left">
-              <div className="font-medium text-foreground">John Doe Lorem</div>
-              <div className="text-sm text-muted-foreground">CEO, Ipsum Corporation</div>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto pt-4">
+              Quando a experiência é igual à das outras lojas, a decisão vira comparação.
+              E comparação leva ao preço.
+            </p>
+
+            <div className="pt-6">
+              <span className="inline-block px-4 py-2 rounded-full bg-destructive/10 text-destructive font-medium text-lg">
+                Marcas memoráveis não vivem disso.
+              </span>
             </div>
           </div>
         </motion.div>

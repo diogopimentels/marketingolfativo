@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 // import { submitToAgendor } from "@/services/agendor"; // Removed in favor of direct backend call
 import { v4 as uuidv4 } from 'uuid';
@@ -94,16 +94,16 @@ export const FormSection = () => {
 
       console.log("✅ Dados enviados para o Backend Vercel!");
 
-      // 4. Sucesso e Download
+      // 4. Sucesso
       toast({
-        title: "Sucesso!",
-        description: "Seu E-book está sendo baixado!",
+        title: "Solicitação Enviada!",
+        description: "Em breve entraremos em contato para agendar sua conversa estratégica.",
       });
 
       setIsSuccess(true);
 
-      // Download automático
-      window.location.href = ebookUrl;
+      // (Opcional) Redirecionar para thank-you page ou apenas mostrar mensagem de sucesso
+      // window.location.href = "/obrigado";
 
     } catch (error) {
       console.error("Erro no envio:", error);
@@ -113,172 +113,220 @@ export const FormSection = () => {
       });
       // Mesmo com erro, deixa baixar (Fail-safe)
       setIsSuccess(true);
-      window.location.href = ebookUrl;
+      // window.location.href = ebookUrl; // Removido fallback de download
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <section id="baixar" className="section-spacing bg-secondary/30">
+    <section id="baixar" className="py-24 md:py-32 bg-secondary/30">
       <div className="container-premium">
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-2xl mx-auto"
-        >
-          {/* Section Header */}
-          <div className="text-left md:text-center mb-12">
-            <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
-              Download Gratuito
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+
+          {/* Left Column: Copy */}
+          <motion.div
+            ref={ref}
+            initial={{ opacity: 0, x: -40 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -40 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-left lg:sticky lg:top-32"
+          >
+            <span className="inline-flex items-center px-3 py-1 rounded-full bg-accent/10 text-accent text-sm font-semibold tracking-wider uppercase mb-6">
+              Conversão Consultiva
             </span>
-            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Baixe o E-book Exclusivo Agora!
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-8 leading-tight">
+              Sua marca já <br className="hidden lg:block" /> evoluiu?
             </h2>
-            <p className="text-muted-foreground text-lg">
-              Em poucos minutos você entende o poder do olfato na fidelização de clientes e aprende como aplicar isso de forma prática na sua marca de roupas.
-            </p>
-          </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="nomeCompleto" className="block text-sm font-medium text-foreground mb-2">
-                Nome Completo
-              </label>
-              <input
-                type="text"
-                id="nomeCompleto"
-                value={formData.nomeCompleto}
-                onChange={handleChange}
-                className="input-premium"
-                placeholder="Queremos personalizar a sua experiência"
-                required
-                disabled={isSuccess}
-              />
+            <div className="space-y-8 text-lg md:text-xl text-muted-foreground leading-relaxed">
+              <p>
+                Se você sente que sua marca atingiu um novo patamar de maturidade — mas a experiência dentro da loja ainda não reflete essa sofisticação —
+                <strong className="text-foreground font-semibold"> chegou a hora de conversar.</strong>
+              </p>
+
+              <div className="pl-6 border-l-2 border-accent/30 space-y-4">
+                <p>
+                  Nossa equipe fará uma análise profunda do seu:
+                </p>
+                <ul className="space-y-2 text-foreground font-medium">
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                    Posicionamento de Mercado
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                    Perfil do Público-Alvo
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent" />
+                    Objetivos de Branding
+                  </li>
+                </ul>
+              </div>
+
+              <p className="text-base">
+                O objetivo é entender se uma <strong>Identidade Olfativa Estratégica</strong> é o próximo passo ideal para o seu negócio agora.
+              </p>
             </div>
+          </motion.div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-                E-mail
-              </label>
-              <input
-                type="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="input-premium"
-                placeholder="Queremos conhecer melhor a sua marca"
-                required
-                disabled={isSuccess}
-              />
-            </div>
+          {/* Right Column: Form Card */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 40 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full"
+          >
+            <div className="bg-card border border-border/50 shadow-2xl shadow-primary/5 rounded-3xl p-6 md:p-8 lg:p-10 relative overflow-hidden">
 
-            <div>
-              <label htmlFor="telefone" className="block text-sm font-medium text-foreground mb-2">
-                Telefone
-              </label>
-              <input
-                type="tel"
-                id="telefone"
-                value={formData.telefone}
-                onChange={handleChange}
-                className="input-premium"
-                placeholder="Digite seu número de telefone"
-                required
-                disabled={isSuccess}
-                maxLength={15}
-              />
-            </div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
 
-            <div>
-              <label htmlFor="nomeMarca" className="block text-sm font-medium text-foreground mb-2">
-                Nome da sua marca
-              </label>
-              <input
-                type="text"
-                id="nomeMarca"
-                value={formData.nomeMarca}
-                onChange={handleChange}
-                className="input-premium"
-                placeholder="Digite o nome da sua marca"
-                required
-                disabled={isSuccess}
-              />
-            </div>
+              <div className="mb-8">
+                <h3 className="text-2xl font-display font-semibold text-foreground mb-2">Agendar Diagnóstico</h3>
+                <p className="text-sm text-muted-foreground">Preencha para receber nosso contato.</p>
+              </div>
 
-            <div>
-              <label htmlFor="temMarca" className="block text-sm font-medium text-foreground mb-2">
-                Você tem marca de roupas ou confecção?
-              </label>
-              <select
-                id="temMarca"
-                value={formData.temMarca}
-                onChange={handleChange}
-                className="input-premium w-full"
-                required
-                disabled={isSuccess}
-              >
-                <option value="Confecção Atacado">Confecção Atacado</option>
-                <option value="Confecção Varejo">Confecção Varejo</option>
-                <option value="Loja Boutique de Roupas">Loja Boutique de Roupas</option>
-                <option value="Loja de departamento">Loja de departamento</option>
-                <option value="Varejo de Moda">Varejo de Moda</option>
-                <option value="Atacado de Moda">Atacado de Moda</option>
-                <option value="Outros">Outros</option>
-              </select>
-            </div>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label htmlFor="nomeCompleto" className="block text-sm font-medium text-foreground/80 mb-2">
+                    Nome Completo
+                  </label>
+                  <input
+                    type="text"
+                    id="nomeCompleto"
+                    value={formData.nomeCompleto}
+                    onChange={handleChange}
+                    className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all duration-300"
+                    placeholder="Seu nome"
+                    required
+                    disabled={isSuccess}
+                  />
+                </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="newsletter"
-                checked={formData.newsletter}
-                onChange={handleChange}
-                className="w-4 h-4 text-primary focus:ring-primary rounded"
-                disabled={isSuccess}
-              />
-              <label htmlFor="newsletter" className="text-sm text-muted-foreground cursor-pointer">
-                Quero receber novidades e conteúdos exclusivos.
-              </label>
-            </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-2">
+                    E-mail Corporativo
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all duration-300"
+                    placeholder="exemplo@suamarca.com.br"
+                    required
+                    disabled={isSuccess}
+                  />
+                </div>
 
-            {isSuccess ? (
-              <Button
-                type="button"
-                variant="hero"
-                size="lg"
-                className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => window.open(ebookUrl, '_blank')}
-              >
-                BAIXAR E-BOOK
-                <Download className="w-5 h-5 ml-2" />
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                variant="hero"
-                size="lg"
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                    Enviando...
-                  </>
+                <div>
+                  <label htmlFor="telefone" className="block text-sm font-medium text-foreground/80 mb-2">
+                    WhatsApp
+                  </label>
+                  <input
+                    type="tel"
+                    id="telefone"
+                    value={formData.telefone}
+                    onChange={handleChange}
+                    className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all duration-300"
+                    placeholder="(00) 00000-0000"
+                    required
+                    disabled={isSuccess}
+                    maxLength={15}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="nomeMarca" className="block text-sm font-medium text-foreground/80 mb-2">
+                      Nome da Marca
+                    </label>
+                    <input
+                      type="text"
+                      id="nomeMarca"
+                      value={formData.nomeMarca}
+                      onChange={handleChange}
+                      className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all duration-300"
+                      placeholder="Nome da loja"
+                      required
+                      disabled={isSuccess}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="temMarca" className="block text-sm font-medium text-foreground/80 mb-2">
+                      Tipo de Negócio
+                    </label>
+                    <select
+                      id="temMarca"
+                      value={formData.temMarca}
+                      onChange={handleChange}
+                      className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary transition-all duration-300"
+                      required
+                      disabled={isSuccess}
+                    >
+                      <option value="Confecção Atacado">Confecção Atacado</option>
+                      <option value="Confecção Varejo">Confecção Varejo</option>
+                      <option value="Loja Boutique de Roupas">Boutique</option>
+                      <option value="Loja de departamento">Departamento</option>
+                      <option value="Varejo de Moda">Varejo de Moda</option>
+                      <option value="Atacado de Moda">Atacado de Moda</option>
+                      <option value="Outros">Outros</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 pt-2">
+                  <input
+                    type="checkbox"
+                    id="newsletter"
+                    checked={formData.newsletter}
+                    onChange={handleChange}
+                    className="mt-1 w-4 h-4 text-primary focus:ring-primary rounded border-input"
+                    disabled={isSuccess}
+                  />
+                  <label htmlFor="newsletter" className="text-xs text-muted-foreground cursor-pointer leading-tight">
+                    Concordo em receber comunicações sobre marketing sensorial e estratégias de marca.
+                  </label>
+                </div>
+
+                {isSuccess ? (
+                  <Button
+                    type="button"
+                    variant="hero"
+                    size="lg"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-6 rounded-xl shadow-lg shadow-emerald-900/10 mt-4"
+                    disabled
+                  >
+                    Solicitação Recebida!
+                    <Check className="w-5 h-5 ml-2" />
+                  </Button>
                 ) : (
-                  <>
-                    BAIXAR AGORA
-                    <Download className="w-5 h-5 ml-2" />
-                  </>
+                  <Button
+                    type="submit"
+                    variant="hero"
+                    size="lg"
+                    className="w-full py-6 text-base md:text-lg font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 mt-4 transition-all duration-300"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        Agendar conversa estratégica
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
-          </form>
-        </motion.div>
+              </form>
+            </div>
+          </motion.div>
+
+        </div>
       </div>
     </section>
   );

@@ -65,40 +65,73 @@ export const BenefitsSection = () => {
           {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16 md:mb-20">
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
-              Benefícios
+              Posicionamento
             </span>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
-              Lorem ipsum dolor sit amet
+              Autoridade + Sofisticação
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Trabalhamos com marcas que já entenderam o jogo do alto valor.
             </p>
           </motion.div>
 
           {/* Benefits Grid */}
-          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                className="card-premium group"
-              >
-                <div className="flex gap-5">
-                  <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
-                    <benefit.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-display text-xl md:text-2xl font-semibold text-foreground mb-3">
-                      {benefit.title}
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {benefit.description}
-                    </p>
-                  </div>
+          <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            <motion.div variants={itemVariants} className="card-premium group">
+              <div className="flex flex-col items-center text-center gap-5">
+                <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                  <Heart className="w-8 h-8 text-primary" />
                 </div>
-              </motion.div>
-            ))}
+                <div>
+                  <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                    Experiência vende mais
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Do que qualquer argumento lógico de venda.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="card-premium group">
+              <div className="flex flex-col items-center text-center gap-5">
+                <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                  <Shield className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                    Percepção de valor
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Vale muito mais do que desconto na etiqueta.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="card-premium group">
+              <div className="flex flex-col items-center text-center gap-5">
+                <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300">
+                  <Check className="w-8 h-8 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                    Marca forte é sentida
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Não precisa ser explicada o tempo todo.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           </div>
+
+          {/* Footer Text */}
+          <motion.div variants={itemVariants} className="text-center mt-12 md:mt-16">
+            <p className="text-xl md:text-2xl font-display font-medium text-foreground">
+              "Não é sobre perfumar o ambiente. É sobre ocupar a memória da cliente."
+            </p>
+          </motion.div>
         </motion.div>
       </div>
     </section>

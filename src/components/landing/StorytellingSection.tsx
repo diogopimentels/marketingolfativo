@@ -23,32 +23,33 @@ export const StorytellingSection = () => {
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <span className="text-sm font-medium text-accent uppercase tracking-widest mb-4 block">
-              Marketing Olfativo
+              O Erro Comum
             </span>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-8 leading-tight">
-              O que o marketing olfativo pode fazer pela sua marca de moda?
+              Perfumar a loja não é o mesmo que <span className="text-gradient">construir identidade.</span>
             </h2>
             <div className="space-y-6 text-muted-foreground text-lg leading-relaxed">
               <p>
-                Descubra como grandes marcas usam fragrâncias para criar conexão emocional, aumentar vendas e fidelizar clientes.
+                Fragrâncias genéricas deixam o ambiente agradável. Mas não constroem lembrança. Não criam conexão. Não comunicam posicionamento.
+              </p>
+              <p className="border-l-4 border-accent pl-4 italic text-foreground/80">
+                O olfato é memória emocional. Se o cheiro não é estratégico, ele é só decoração.
+              </p>
+
+              <h3 className="font-display text-2xl text-foreground font-semibold mt-8 pt-4">
+                A virada de chave
+              </h3>
+              <p>
+                É aqui que o marketing olfativo deixa de ser “cheirinho” e passa a ser <strong>branding sensorial</strong>.
               </p>
               <p>
-                Você já se perguntou por que certas marcas deixam uma impressão tão profunda, que até o aroma delas parece inesquecível? O segredo está no marketing olfativo.
+                Nós desenvolvemos assinaturas olfativas exclusivas que traduzem a essência da sua marca em uma experiência invisível — mas impossível de ignorar.
               </p>
               <p>
-                Em um mundo onde todos disputam atenção com imagens e sons, as marcas que tocam o coração – e o olfato – criam experiências verdadeiramente memoráveis.
+                A cliente pode não perceber conscientemente. Mas ela sente. E lembra.
               </p>
-              <p>
-                Um aroma exclusivo transforma a simples visita a uma loja em um momento de encantamento, um encontro sensorial que gera conexão, confiança e desejo.
-              </p>
-              <p>
-                Grandes marcas já entenderam que o cheiro certo faz toda a diferença: cria identidade, reforça valores e se torna uma extensão natural do que a marca é.
-              </p>
-              <p>
-                O marketing olfativo não é apenas um detalhe: é a emoção que sua cliente leva para casa, associada à sensação de bem-estar, elegância e exclusividade.
-              </p>
-              <p className="font-semibold text-foreground">
-                Porque no final das contas, a cliente pode até esquecer o que viu ou ouviu... Mas nunca vai esquecer como você a fez se sentir.
+              <p className="font-semibold text-foreground text-xl">
+                E é isso que diferencia marcas comuns de marcas desejadas.
               </p>
             </div>
           </motion.div>

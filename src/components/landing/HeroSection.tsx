@@ -29,7 +29,7 @@ export const HeroSection = () => {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent-muted border border-accent/20 mb-8"
           >
             <Sparkles className="w-4 h-4 text-accent" />
-            <span className="text-sm font-medium text-accent">Guia Exclusivo para Marcas de Moda</span>
+            <span className="text-sm font-medium text-accent">Especialista em Marketing Olfativo Têxtil</span>
           </motion.div>
 
           {/* Headline */}
@@ -39,8 +39,8 @@ export const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-8 text-balance leading-[1.1]"
           >
-            Descubra o aroma ideal para sua{" "}
-            <span className="text-gradient">marca de roupas</span>
+            Sua marca pode ser vista. <br className="hidden md:block" />
+            <span className="text-gradient">Ou pode ser lembrada.</span>
           </motion.h1>
 
           {/* Subheadline */}
@@ -50,7 +50,7 @@ export const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-0 md:mx-auto mb-12 leading-relaxed"
           >
-            Transforme a identidade da sua marca com o poder do aroma. Crie experiências únicas que encantam seus clientes e fidelizam sua marca.
+            Criamos identidades olfativas exclusivas para marcas de moda que querem ser reconhecidas sem disputar preço.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -66,7 +66,7 @@ export const HeroSection = () => {
               onClick={scrollToForm}
               className="w-full sm:w-auto h-auto py-4 px-6 text-sm sm:text-base sm:py-6 sm:px-10 whitespace-normal text-center"
             >
-              BAIXAR O GUIA AGORA!
+              Quero fortalecer minha marca
               <ArrowRight className="w-5 h-5 ml-2 shrink-0" />
             </Button>
           </motion.div>

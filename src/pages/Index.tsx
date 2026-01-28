@@ -17,11 +17,11 @@ const Index = () => {
       <Navbar />
       <main>
         <HeroSection />
-        <FeaturesSection />
-        <StatsSection />
+        <EmotionalSection />
         <StorytellingSection />
-        {/* <BenefitsSection /> */}
-        {/* <EmotionalSection /> */}
+        <BenefitsSection />
+        {/* <FeaturesSection /> */}
+        {/* <StatsSection /> */}
         {/* <HowItWorksSection /> */}
         {/* <CTASection /> */}
         <FormSection />
