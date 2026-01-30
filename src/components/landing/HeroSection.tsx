@@ -29,7 +29,7 @@ export const HeroSection = () => {
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent-muted border border-accent/20 mb-8"
           >
             <Sparkles className="w-4 h-4 text-accent" />
-            <span className="text-sm font-medium text-accent">Especialista em Marketing Olfativo Têxtil</span>
+            <span className="text-sm font-medium text-accent">Empresa especializada em marketing olfativo têxtil</span>
           </motion.div>
 
           {/* Headline */}
@@ -39,8 +39,8 @@ export const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-8 text-balance leading-[1.1]"
           >
-            Sua marca pode ser vista. <br className="hidden md:block" />
-            <span className="text-gradient">Ou pode ser lembrada.</span>
+            Sua marca será vista <br className="hidden md:block" />
+            <span className="text-gradient">e desejada.</span>
           </motion.h1>
 
           {/* Subheadline */}
