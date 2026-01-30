@@ -40,7 +40,7 @@ export const HeroSection = () => {
             className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-8 text-balance leading-[1.1]"
           >
             Sua marca será vista <br className="hidden md:block" />
-            <span className="text-gradient">e desejada.</span>
+            <span className="text-gradient">e desejada</span>
           </motion.h1>
 
           {/* Subheadline */}
