@@ -12,7 +12,7 @@ const footerLinks = {
     { label: "O que aprender", href: "#o-que-aprender" },
     { label: "Estatísticas", href: "#estatisticas" },
     { label: "Sobre", href: "#sobre" },
-    { label: "Baixar", href: "#baixar" },
+    { label: "Saber mais", href: "#baixar" },
   ],
 };
 

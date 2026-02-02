@@ -74,7 +74,7 @@ export const Navbar = () => {
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-4">
             <Button variant="default" size="default" onClick={() => document.getElementById('baixar')?.scrollIntoView({ behavior: 'smooth' })}>
-              BAIXAR AGORA
+              SABER MAIS
             </Button>
           </div>
 
