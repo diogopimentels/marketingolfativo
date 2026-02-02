@@ -183,7 +183,7 @@ export const FormSection = () => {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
 
               <div className="mb-8">
-                <h3 className="text-2xl font-display font-semibold text-foreground mb-2">Agendar Diagnóstico</h3>
+                <h3 className="text-2xl font-display font-semibold text-foreground mb-2">Receba nosso contato</h3>
                 <p className="text-sm text-muted-foreground">Preencha para receber nosso contato.</p>
               </div>
 
@@ -206,7 +206,7 @@ export const FormSection = () => {
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-2">
-                    E-mail Corporativo
+                    E-mail
                   </label>
                   <input
                     type="email"
